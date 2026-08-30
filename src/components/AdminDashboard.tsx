@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { getElectionStats } from "@/lib/actions";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface ChartItem {
   id: string;
@@ -86,10 +87,18 @@ export default function AdminDashboard({ initialStats }: AdminDashboardProps) {
         </div>
 
         <div className="flex items-center gap-3">
+          <Link
+            href="/admin/berita-acara"
+            className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-bold py-2 px-4 rounded-xl transition-all duration-300 transform active:scale-95 text-xs shadow-md shadow-violet-200 flex items-center gap-2"
+          >
+            <span>📜</span>
+            <span>Cetak Berita Acara</span>
+          </Link>
+
           <button
             onClick={refreshStats}
             disabled={isPending}
-            className="bg-white hover:bg-violet-50 border border-violet-200 text-violet-700 font-semibold py-2 px-4 rounded-xl transition-all duration-300 transform active:scale-95 disabled:opacity-50 flex items-center gap-2 text-sm shadow-sm"
+            className="bg-white hover:bg-violet-50 border border-violet-200 text-violet-700 font-semibold py-2 px-4 rounded-xl transition-all duration-300 transform active:scale-95 disabled:opacity-50 flex items-center gap-2 text-sm shadow-sm cursor-pointer"
           >
             <svg className={`w-4 h-4 ${isPending ? "animate-spin" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
