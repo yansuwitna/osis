@@ -1,0 +1,93 @@
+datasource db {
+  provider = "mysql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum ElectionType {
+  PILKOSIS
+  PKS
+  MPK
+}
+
+model Candidate {
+  id        String       @id @default(cuid())
+  type      ElectionType @default(PILKOSIS)
+  noUrut    Int
+  name      String
+  vision    String       @db.Text
+  mission   String       @db.Text
+  photoUrl  String
+  isActive  Boolean      @default(true)
+  votes     Vote[]
+
+  @@unique([type, noUrut])
+}
+
+model Voter {
+  id          String    @id @default(cuid())
+  code        String?   @unique // KODE Pemilih (NIS / No. Induk / Kode)
+  name        String?   // NAMA Siswa/Pemilih
+  className   String    // KELOMPOK / Kelas
+  token       String    @unique // 6 Digit Angka Unik
+  
+  // Status memilih per jenis pemilihan
+  votedPilcosis   Boolean   @default(false)
+  votedPilcosisAt DateTime?
+  votedPks        Boolean   @default(false)
+  votedPksAt      DateTime?
+  votedMpk        Boolean   @default(false)
+  votedMpkAt      DateTime?
+
+  // Status general
+  voted       Boolean   @default(false)
+  votedAt     DateTime?
+
+  votes       Vote[]
+  createdAt   DateTime  @default(now())
+}
+
+model Vote {
+  id          String       @id @default(cuid())
+  type        ElectionType @default(PILKOSIS)
+  candidateId String
+  candidate   Candidate    @relation(fields: [candidateId], references: [id])
+  voterId     String
+  voter       Voter        @relation(fields: [voterId], references: [id])
+  createdAt   DateTime     @default(now())
+
+  @@unique([type, voterId])
+}
+
+model Admin {
+  id       String @id @default(cuid())
+  username String @unique
+  password String
+}
+
+model ElectionSetting {
+  id              String   @id @default("active_setting")
+  activePilcosis  Boolean  @default(true)
+  activePks       Boolean  @default(false)
+  activeMpk       Boolean  @default(false)
+  title           String   @default("PEMILIHAN OSIS, PKS & MPK")
+  
+  // Konfigurasi Surat Panggilan & Info Sekolah
+  schoolName          String   @default("SMA / SMK NEGERI 1 INDONESIA")
+  eventDate           String   @default("Senin, 15 September 2026")
+  eventTime           String   @default("08:00 - 12:00 WIB")
+  eventPlace          String   @default("Bilik Suara Lab Komputer")
+  signatureCity       String   @default("Karangasem")
+
+  // Konfigurasi Panitia & Tanda Tangan
+  committeeChairman   String   @default("Ketua Panitia")
+  committeeSecretary  String   @default("Sekretaris Panitia")
+  headmasterName      String   @default("Kepala Sekolah")
+  headmasterNip       String   @default("-")
+
+  updatedAt           DateTime @updatedAt
+}
+
+
