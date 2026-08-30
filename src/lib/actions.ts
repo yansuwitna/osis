@@ -920,6 +920,92 @@ export async function getElectionStats(type?: ElectionType) {
   }
 }
 
+export async function getBeritaAcaraData() {
+  try {
+    const settings = await getElectionSettings();
+    const totalVoters = await db.voter.count();
+    const votedGeneral = await db.voter.count({ where: { voted: true } });
+    const votedPilcosis = await db.voter.count({ where: { votedPilcosis: true } });
+    const votedPks = await db.voter.count({ where: { votedPks: true } });
+    const votedMpk = await db.voter.count({ where: { votedMpk: true } });
+
+    // Suara total di tabel Vote per tipe
+    const votesPilcosis = await db.vote.count({ where: { type: "PILKOSIS" } });
+    const votesPks = await db.vote.count({ where: { type: "PKS" } });
+    const votesMpk = await db.vote.count({ where: { type: "MPK" } });
+
+    // Ambil seluruh kandidat dengan jumlah perolehan suara
+    const candidates = await db.candidate.findMany({
+      select: {
+        id: true,
+        type: true,
+        noUrut: true,
+        name: true,
+        vision: true,
+        mission: true,
+        photoUrl: true,
+        _count: {
+          select: { votes: true },
+        },
+      },
+      orderBy: [{ type: "asc" }, { noUrut: "asc" }],
+    });
+
+    return {
+      success: true,
+      settings,
+      totalVoters,
+      votedGeneral,
+      turnout: {
+        PILKOSIS: {
+          totalDpt: totalVoters,
+          hadir: votedPilcosis,
+          tidakHadir: Math.max(0, totalVoters - votedPilcosis),
+          suaraSah: votesPilcosis,
+          persenHadir: totalVoters > 0 ? ((votedPilcosis / totalVoters) * 100).toFixed(1) : "0",
+        },
+        PKS: {
+          totalDpt: totalVoters,
+          hadir: votedPks,
+          tidakHadir: Math.max(0, totalVoters - votedPks),
+          suaraSah: votesPks,
+          persenHadir: totalVoters > 0 ? ((votedPks / totalVoters) * 100).toFixed(1) : "0",
+        },
+        MPK: {
+          totalDpt: totalVoters,
+          hadir: votedMpk,
+          tidakHadir: Math.max(0, totalVoters - votedMpk),
+          suaraSah: votesMpk,
+          persenHadir: totalVoters > 0 ? ((votedMpk / totalVoters) * 100).toFixed(1) : "0",
+        },
+      },
+      candidates: candidates.map((c) => ({
+        id: c.id,
+        type: c.type,
+        noUrut: c.noUrut,
+        name: c.name,
+        photoUrl: c.photoUrl,
+        votes: c._count.votes,
+      })),
+    };
+  } catch (error: any) {
+    console.error("Gagal memuat data berita acara:", error);
+    return {
+      success: false,
+      error: error.message || "Gagal memuat data berita acara",
+      settings: await getElectionSettings(),
+      totalVoters: 0,
+      votedGeneral: 0,
+      turnout: {
+        PILKOSIS: { totalDpt: 0, hadir: 0, tidakHadir: 0, suaraSah: 0, persenHadir: "0" },
+        PKS: { totalDpt: 0, hadir: 0, tidakHadir: 0, suaraSah: 0, persenHadir: "0" },
+        MPK: { totalDpt: 0, hadir: 0, tidakHadir: 0, suaraSah: 0, persenHadir: "0" },
+      },
+      candidates: [],
+    };
+  }
+}
+
 // ==========================================
 // 7. BACKUP & RESTORE ACTIONS
 // ==========================================
