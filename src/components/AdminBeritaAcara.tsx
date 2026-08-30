@@ -513,18 +513,16 @@ export default function AdminBeritaAcara({ initialData }: AdminBeritaAcaraProps)
 
             {/* Panitia */}
             <div className="grid grid-cols-2 gap-6 text-center mt-4">
-              <div className="flex flex-col justify-between h-28">
+              <div className="flex flex-col justify-between h-24">
                 <p className="font-bold uppercase">Sekretaris Panitia,</p>
                 <div>
-                  <p className="font-black underline uppercase">{committeeSecretary}</p>
-                  <p className="text-[10px] text-slate-500 font-medium">NIP / NIS: -</p>
+                  <p className="font-bold underline">{committeeSecretary}</p>
                 </div>
               </div>
-              <div className="flex flex-col justify-between h-28">
+              <div className="flex flex-col justify-between h-24">
                 <p className="font-bold uppercase">Ketua Panitia Pemilihan,</p>
                 <div>
-                  <p className="font-black underline uppercase">{committeeChairman}</p>
-                  <p className="text-[10px] text-slate-500 font-medium">NIP / NIS: -</p>
+                  <p className="font-bold underline">{committeeChairman}</p>
                 </div>
               </div>
             </div>
@@ -534,10 +532,10 @@ export default function AdminBeritaAcara({ initialData }: AdminBeritaAcaraProps)
               <p className="font-bold uppercase mb-0.5">Mengetahui,</p>
               <p className="font-bold uppercase">{headmasterName.includes("Kepala") ? headmasterName : `Kepala ${schoolName}`}</p>
               
-              <div className="h-20"></div>
+              <div className="h-16"></div>
 
               <div>
-                <p className="font-black underline uppercase">{headmasterName}</p>
+                <p className="font-bold underline">{headmasterName}</p>
                 <p className="text-[10px] text-slate-700 font-mono">NIP. {headmasterNip}</p>
               </div>
             </div>

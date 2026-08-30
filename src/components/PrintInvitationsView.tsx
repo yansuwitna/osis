@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 interface Voter {
   id: string;
@@ -70,6 +70,35 @@ export default function PrintInvitationsView({
 
   return (
     <div className="bg-slate-100 min-h-screen print:bg-white text-black font-sans print:m-0 print:p-0">
+      {/* Print Specific CSS */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @page {
+          size: A4 portrait;
+          margin: 4mm 4mm 4mm 4mm;
+        }
+        @media print {
+          html, body {
+            width: 100% !important;
+            height: auto !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: white !important;
+            color: black !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          .print-invitation-page {
+            width: 100% !important;
+            max-width: 100% !important;
+            height: 100% !important;
+            margin: 0 !important;
+            padding: 2mm !important;
+            border: none !important;
+            box-shadow: none !important;
+          }
+        }
+      `}} />
+
       {/* Floating Toolbar (Screen only) */}
       <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 px-6 py-3.5 shadow-sm flex items-center justify-between print:hidden">
         <div>
@@ -84,13 +113,13 @@ export default function PrintInvitationsView({
         <div className="flex items-center gap-3">
           <button
             onClick={() => window.close()}
-            className="bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-2 px-4 rounded-xl text-xs transition-all"
+            className="bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-2 px-4 rounded-xl text-xs transition-all cursor-pointer"
           >
             Tutup Tab
           </button>
           <button
             onClick={() => window.print()}
-            className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-bold py-2.5 px-6 rounded-xl text-xs shadow-md shadow-violet-300/30 flex items-center gap-2 transition-all active:scale-95"
+            className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-bold py-2.5 px-6 rounded-xl text-xs shadow-md shadow-violet-300/30 flex items-center gap-2 transition-all active:scale-95 cursor-pointer"
           >
             Cetak Sekarang / Simpan PDF
           </button>
@@ -107,7 +136,7 @@ export default function PrintInvitationsView({
           pages.map((pageVoters, pageIndex) => (
             <div
               key={pageIndex}
-              className="bg-white shadow-xl border border-slate-200 print:shadow-none print:border-none w-[210mm] min-h-[297mm] max-h-[297mm] h-[297mm] p-[3.5mm] grid grid-cols-2 grid-rows-5 gap-[2mm] box-border relative print:break-after-page print:page-break-after-always overflow-hidden"
+              className="print-invitation-page bg-white shadow-xl border border-slate-200 print:shadow-none print:border-none w-[210mm] min-h-[297mm] max-h-[297mm] h-[297mm] p-[3.5mm] grid grid-cols-2 grid-rows-5 gap-[2mm] box-border relative print:break-after-page print:page-break-after-always overflow-hidden"
               style={{
                 pageBreakAfter: "always",
                 breakAfter: "page",
@@ -186,7 +215,7 @@ export default function PrintInvitationsView({
                           />
                         </div>
 
-                        <span className="font-bold underline uppercase text-[6px] block leading-none truncate max-w-full">
+                        <span className="font-bold underline text-[6px] block leading-none truncate max-w-full">
                           {committeeChairman}
                         </span>
                       </div>

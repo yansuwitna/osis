@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 
@@ -273,7 +273,7 @@ export default function AdminInvitations({ initialVoters, settings }: AdminInvit
                     />
                   </div>
 
-                  <span className="font-bold underline uppercase text-[7.5px] text-slate-800 block leading-none truncate max-w-full">
+                  <span className="font-bold underline text-[7.5px] text-slate-800 block leading-none truncate max-w-full">
                     {committeeChairman}
                   </span>
                 </div>

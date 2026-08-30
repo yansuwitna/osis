@@ -58,6 +58,34 @@ export default function PrintVotersView({
 
   return (
     <div className="bg-slate-100 min-h-screen print:bg-white text-black font-sans print:m-0 print:p-0">
+      {/* Print Specific CSS */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @page {
+          size: A4 portrait;
+          margin: 10mm 12mm 10mm 12mm;
+        }
+        @media print {
+          html, body {
+            width: 100% !important;
+            height: auto !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: white !important;
+            color: black !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          .print-voters-sheet {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+          }
+        }
+      `}} />
+
       {/* Floating Toolbar (Screen only) */}
       <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 px-6 py-3.5 shadow-sm flex items-center justify-between print:hidden">
         <div>
@@ -72,13 +100,13 @@ export default function PrintVotersView({
         <div className="flex items-center gap-3">
           <button
             onClick={() => window.close()}
-            className="bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-2 px-4 rounded-xl text-xs transition-all"
+            className="bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-2 px-4 rounded-xl text-xs transition-all cursor-pointer"
           >
             Tutup Tab
           </button>
           <button
             onClick={() => window.print()}
-            className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-bold py-2.5 px-6 rounded-xl text-xs shadow-md shadow-violet-300/30 flex items-center gap-2 transition-all active:scale-95"
+            className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-bold py-2.5 px-6 rounded-xl text-xs shadow-md shadow-violet-300/30 flex items-center gap-2 transition-all active:scale-95 cursor-pointer"
           >
             Cetak Sekarang / Simpan PDF
           </button>
@@ -87,7 +115,7 @@ export default function PrintVotersView({
 
       {/* Sheet Container (Clean White Document Page) */}
       <div className="p-4 sm:p-8 flex flex-col items-center print:p-0">
-        <div className="bg-white shadow-xl border border-slate-200 print:shadow-none print:border-none w-[210mm] min-h-[297mm] p-[10mm] print:p-0 flex flex-col justify-between box-border">
+        <div className="print-voters-sheet bg-white shadow-xl border border-slate-200 print:shadow-none print:border-none w-full max-w-[210mm] print:max-w-none print:w-full min-h-[297mm] print:min-h-0 p-6 sm:p-[10mm] print:p-0 flex flex-col justify-between box-border">
           <div>
             {/* Kop / Header Resmi dengan Logo Sekolah & Logo OSIS */}
             <div className="border-b-2 border-black pb-3 mb-4">
@@ -183,7 +211,7 @@ export default function PrintVotersView({
                 <p>Mengetahui,</p>
                 <p className="font-bold">Kepala Sekolah</p>
                 <div className="h-20" />
-                <p className="font-bold underline uppercase">{headmasterName}</p>
+                <p className="font-bold underline">{headmasterName}</p>
                 <p className="text-[10px]">NIP. {headmasterNip}</p>
               </div>
 
@@ -191,7 +219,7 @@ export default function PrintVotersView({
                 <p>{formattedSignatureDate}</p>
                 <p className="font-bold">Ketua Panitia Pemilihan</p>
                 <div className="h-20" />
-                <p className="font-bold underline uppercase">{committeeChairman}</p>
+                <p className="font-bold underline">{committeeChairman}</p>
               </div>
             </div>
           </div>

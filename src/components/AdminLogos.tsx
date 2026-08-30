@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useTransition } from "react";
 import { uploadLogoAction } from "@/lib/actions";
@@ -12,9 +12,9 @@ interface AdminLogosProps {
 
 export default function AdminLogos({ hasOsisLogo, hasSchoolLogo, hasTtd }: AdminLogosProps) {
   const [isPending, startTransition] = useTransition();
-  const [previewOsis, setPreviewOsis] = useState<string | null>(hasOsisLogo ? "/logo.png?v=" + Date.now() : null);
-  const [previewSchool, setPreviewSchool] = useState<string | null>(hasSchoolLogo ? "/sekolah.png?v=" + Date.now() : null);
-  const [previewTtd, setPreviewTtd] = useState<string | null>(hasTtd ? "/ttd.png?v=" + Date.now() : null);
+  const [previewOsis, setPreviewOsis] = useState<string | null>(hasOsisLogo ? "/logo.png" : null);
+  const [previewSchool, setPreviewSchool] = useState<string | null>(hasSchoolLogo ? "/sekolah.png" : null);
+  const [previewTtd, setPreviewTtd] = useState<string | null>(hasTtd ? "/ttd.png" : null);
 
   const handleUpload = (type: "osis" | "sekolah" | "ttd", file: File) => {
     if (!file) return;

@@ -102,6 +102,39 @@ export default function PrintBeritaAcaraView({
 
   return (
     <div className="bg-slate-100 min-h-screen print:bg-white text-black font-sans print:m-0 print:p-0">
+      {/* Print Specific CSS to ensure perfect margins without clipping */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @page {
+          size: A4 portrait;
+          margin: 12mm 14mm 12mm 14mm;
+        }
+        @media print {
+          html, body {
+            width: 100% !important;
+            height: auto !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: white !important;
+            color: black !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          .print-sheet {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-height: auto !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+          }
+          .page-break-avoid {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+          }
+        }
+      `}} />
+
       {/* Floating Toolbar (Screen only) */}
       <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 px-6 py-3.5 shadow-sm flex items-center justify-between print:hidden">
         <div>
@@ -134,7 +167,7 @@ export default function PrintBeritaAcaraView({
 
       {/* Container Kertas Cetak A4 */}
       <div className="p-4 sm:p-8 flex flex-col items-center print:p-0">
-        <div className="bg-white shadow-2xl border border-slate-200 print:shadow-none print:border-none w-[210mm] min-h-[297mm] p-[15mm] print:p-0 flex flex-col justify-between box-border text-[11pt] leading-relaxed">
+        <div className="print-sheet bg-white shadow-2xl border border-slate-200 print:shadow-none print:border-none w-full max-w-[210mm] print:max-w-none print:w-full min-h-[297mm] print:min-h-0 p-8 sm:p-12 print:p-0 flex flex-col justify-between box-border text-[10.5pt] print:text-[10pt] leading-normal">
           
           <div>
             {/* Kop / Header Resmi */}
@@ -186,20 +219,20 @@ export default function PrintBeritaAcaraView({
             </div>
 
             {/* Judul Berita Acara */}
-            <div className="text-center mb-6">
+            <div className="text-center mb-5">
               <h2 className="text-base font-black uppercase tracking-wide underline decoration-2">
                 BERITA ACARA REKAPITULASI HASIL PENGHITUNGAN SUARA
               </h2>
               <p className="text-xs font-bold text-slate-800 uppercase mt-0.5">
                 {electionTitle}
               </p>
-              <p className="text-[10pt] font-mono text-slate-700 mt-1">
+              <p className="text-[9.5pt] font-mono text-slate-700 mt-1">
                 Nomor: {defaultDocNo}
               </p>
             </div>
 
             {/* Paragraf Pembuka */}
-            <div className="text-justify mb-5 text-[10.5pt] leading-normal space-y-2">
+            <div className="text-justify mb-5 text-[10pt] leading-relaxed space-y-1.5">
               <p>
                 Pada hari ini <b>{eventDate}</b>, bertempat di <b>{eventPlace}</b>, Panitia Pemilihan Suara Elektronik (E-Voting) telah melaksanakan rapat pleno rekapitulasi dan penghitungan suara untuk <b>{electionTitle}</b> di lingkungan <b>{schoolName}</b>.
               </p>
@@ -224,40 +257,40 @@ export default function PrintBeritaAcaraView({
               const totalCatVotes = catCandidates.reduce((acc, curr) => acc + curr.votes, 0);
 
               return (
-                <div key={cat.key} className="mb-6">
+                <div key={cat.key} className="mb-5 page-break-avoid">
                   {/* Sub Judul Kategori jika lebih dari 1 */}
                   {categoriesToShow.length > 1 && (
-                    <div className="bg-slate-100 border-l-4 border-black px-3 py-1 font-bold text-[10.5pt] uppercase mb-3">
+                    <div className="bg-slate-100 border-l-4 border-black px-3 py-1 font-bold text-[10pt] uppercase mb-2.5">
                       {idx + 1}. {cat.label}
                     </div>
                   )}
 
                   {/* 1. Data Pemilih & Partisipasi */}
                   <div className="mb-3">
-                    <h4 className="font-bold text-[10pt] mb-1.5">
+                    <h4 className="font-bold text-[9.5pt] mb-1">
                       I. DATA PEMILIH DAN TINGKAT PARTISIPASI
                     </h4>
-                    <table className="w-full border-collapse border border-black text-[9.5pt]">
+                    <table className="w-full border-collapse border border-black text-[9pt]">
                       <tbody>
                         <tr className="border-b border-black">
-                          <td className="p-1.5 border-r border-black w-8 text-center font-medium">1</td>
-                          <td className="p-1.5 border-r border-black font-medium">Jumlah Pemilih Terdaftar dalam DPT</td>
-                          <td className="p-1.5 text-right font-bold w-28">{catTurnout.totalDpt.toLocaleString("id-ID")} Orang</td>
+                          <td className="p-1 border-r border-black w-7 text-center font-medium">1</td>
+                          <td className="p-1 border-r border-black font-medium">Jumlah Pemilih Terdaftar dalam DPT</td>
+                          <td className="p-1 text-right font-bold w-28">{catTurnout.totalDpt.toLocaleString("id-ID")} Orang</td>
                         </tr>
                         <tr className="border-b border-black">
-                          <td className="p-1.5 border-r border-black w-8 text-center font-medium">2</td>
-                          <td className="p-1.5 border-r border-black font-medium">Jumlah Pemilih yang Menggunakan Hak Pilih (Hadir)</td>
-                          <td className="p-1.5 text-right font-bold w-28 text-emerald-800">{catTurnout.hadir.toLocaleString("id-ID")} Orang</td>
+                          <td className="p-1 border-r border-black w-7 text-center font-medium">2</td>
+                          <td className="p-1 border-r border-black font-medium">Jumlah Pemilih yang Menggunakan Hak Pilih (Hadir)</td>
+                          <td className="p-1 text-right font-bold w-28 text-emerald-800">{catTurnout.hadir.toLocaleString("id-ID")} Orang</td>
                         </tr>
                         <tr className="border-b border-black">
-                          <td className="p-1.5 border-r border-black w-8 text-center font-medium">3</td>
-                          <td className="p-1.5 border-r border-black font-medium">Jumlah Pemilih yang Tidak Menggunakan Hak Pilih (Golput)</td>
-                          <td className="p-1.5 text-right font-bold w-28 text-red-800">{catTurnout.tidakHadir.toLocaleString("id-ID")} Orang</td>
+                          <td className="p-1 border-r border-black w-7 text-center font-medium">3</td>
+                          <td className="p-1 border-r border-black font-medium">Jumlah Pemilih yang Tidak Menggunakan Hak Pilih (Golput)</td>
+                          <td className="p-1 text-right font-bold w-28 text-red-800">{catTurnout.tidakHadir.toLocaleString("id-ID")} Orang</td>
                         </tr>
                         <tr className="bg-slate-50 font-bold">
-                          <td className="p-1.5 border-r border-black text-center">4</td>
-                          <td className="p-1.5 border-r border-black">Persentase Partisipasi Pemilih</td>
-                          <td className="p-1.5 text-right">{catTurnout.persenHadir}%</td>
+                          <td className="p-1 border-r border-black text-center">4</td>
+                          <td className="p-1 border-r border-black">Persentase Partisipasi Pemilih</td>
+                          <td className="p-1 text-right">{catTurnout.persenHadir}%</td>
                         </tr>
                       </tbody>
                     </table>
@@ -265,23 +298,23 @@ export default function PrintBeritaAcaraView({
 
                   {/* 2. Rincian Perolehan Suara Kandidat */}
                   <div className="mb-3">
-                    <h4 className="font-bold text-[10pt] mb-1.5">
+                    <h4 className="font-bold text-[9.5pt] mb-1">
                       II. RINCIAN PEROLEHAN SUARA PASANGAN CALON / KANDIDAT
                     </h4>
-                    <table className="w-full border-collapse border border-black text-[9.5pt]">
+                    <table className="w-full border-collapse border border-black text-[9pt]">
                       <thead>
                         <tr className="bg-slate-200 border-b border-black text-center font-bold">
-                          <th className="p-1.5 border-r border-black w-14">No. Urut</th>
-                          <th className="p-1.5 border-r border-black text-left">Nama Pasangan Calon / Kandidat</th>
-                          <th className="p-1.5 border-r border-black w-28 text-right">Perolehan Suara</th>
-                          <th className="p-1.5 border-r border-black w-20 text-right">Persentase</th>
-                          <th className="p-1.5 w-28 text-center">Keterangan</th>
+                          <th className="p-1 border-r border-black w-12">No. Urut</th>
+                          <th className="p-1 border-r border-black text-left">Nama Pasangan Calon / Kandidat</th>
+                          <th className="p-1 border-r border-black w-28 text-right">Perolehan Suara</th>
+                          <th className="p-1 border-r border-black w-18 text-right">Persentase</th>
+                          <th className="p-1 w-24 text-center">Keterangan</th>
                         </tr>
                       </thead>
                       <tbody>
                         {catCandidates.length === 0 ? (
                           <tr>
-                            <td colSpan={5} className="p-3 text-center italic text-slate-500">
+                            <td colSpan={5} className="p-2 text-center italic text-slate-500">
                               Belum ada data kandidat untuk kategori ini.
                             </td>
                           </tr>
@@ -291,21 +324,21 @@ export default function PrintBeritaAcaraView({
                             const isWinner = winner && winner.id === c.id && c.votes > 0;
                             return (
                               <tr key={c.id} className={`border-b border-black ${isWinner ? "bg-emerald-50/60 font-semibold" : ""}`}>
-                                <td className="p-1.5 border-r border-black text-center font-bold">
+                                <td className="p-1 border-r border-black text-center font-bold">
                                   {c.noUrut < 10 ? `0${c.noUrut}` : c.noUrut}
                                 </td>
-                                <td className="p-1.5 border-r border-black">
+                                <td className="p-1 border-r border-black">
                                   <div className="font-bold text-black">{c.name}</div>
                                 </td>
-                                <td className="p-1.5 border-r border-black text-right font-mono font-bold">
+                                <td className="p-1 border-r border-black text-right font-mono font-bold">
                                   {c.votes.toLocaleString("id-ID")} Suara
                                 </td>
-                                <td className="p-1.5 border-r border-black text-right font-mono">
+                                <td className="p-1 border-r border-black text-right font-mono">
                                   {percent}%
                                 </td>
-                                <td className="p-1.5 text-center font-bold text-[9pt]">
+                                <td className="p-1 text-center font-bold text-[8.5pt]">
                                   {isWinner ? (
-                                    <span className="text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-300">
+                                    <span className="text-emerald-700 bg-emerald-100 px-1 py-0.5 rounded border border-emerald-300">
                                       TERPILIH ⭐
                                     </span>
                                   ) : (
@@ -317,14 +350,14 @@ export default function PrintBeritaAcaraView({
                           })
                         )}
                         <tr className="bg-slate-100 font-bold border-t-2 border-black">
-                          <td colSpan={2} className="p-1.5 border-r border-black text-center uppercase">
+                          <td colSpan={2} className="p-1 border-r border-black text-center uppercase">
                             Total Suara Sah Masuk
                           </td>
-                          <td className="p-1.5 border-r border-black text-right font-mono">
+                          <td className="p-1 border-r border-black text-right font-mono">
                             {totalCatVotes.toLocaleString("id-ID")} Suara
                           </td>
-                          <td className="p-1.5 border-r border-black text-right font-mono">100.0%</td>
-                          <td className="p-1.5 text-center text-xs">SAH</td>
+                          <td className="p-1 border-r border-black text-right font-mono">100.0%</td>
+                          <td className="p-1 text-center text-xs">SAH</td>
                         </tr>
                       </tbody>
                     </table>
@@ -332,8 +365,8 @@ export default function PrintBeritaAcaraView({
 
                   {/* 3. Penetapan Pemenang */}
                   {winner && winner.votes > 0 && (
-                    <div className="bg-slate-50 border border-black p-2.5 rounded-sm text-[10pt] mb-4">
-                      <span className="font-bold uppercase block text-[9.5pt] mb-1">
+                    <div className="bg-slate-50 border border-black p-2 rounded-sm text-[9.5pt] mb-3">
+                      <span className="font-bold uppercase block text-[9pt] mb-0.5">
                         III. PENETAPAN HASIL PEMILIHAN
                       </span>
                       <p className="leading-relaxed">
@@ -347,39 +380,39 @@ export default function PrintBeritaAcaraView({
 
             {/* Catatan Pelaksanaan Tambahan jika ada */}
             {notes && (
-              <div className="mb-4 text-[10pt]">
-                <h4 className="font-bold text-[10pt] mb-1">CATATAN KHUSUS PELAKSANAAN:</h4>
-                <div className="border border-slate-300 p-2.5 rounded text-justify italic text-slate-800 bg-slate-50">
+              <div className="mb-3 text-[9.5pt] page-break-avoid">
+                <h4 className="font-bold mb-1">CATATAN KHUSUS PELAKSANAAN:</h4>
+                <div className="border border-slate-300 p-2 rounded text-justify italic text-slate-800 bg-slate-50">
                   {notes}
                 </div>
               </div>
             )}
 
             {/* Paragraf Penutup */}
-            <p className="text-justify text-[10.5pt] mb-6">
+            <p className="text-justify text-[10pt] mb-4">
               Demikian Berita Acara ini dibuat dan ditandatangani oleh Panitia Pemilihan, Saksi-Saksi Pasangan Calon, serta disahkan oleh Kepala Sekolah untuk dipergunakan sebagaimana mestinya.
             </p>
           </div>
 
           {/* Kolom Tanda Tangan Resmi */}
-          <div className="mt-4 pt-2 border-t border-slate-200">
-            <div className="text-right text-[10.5pt] mb-4 font-medium">
+          <div className="mt-2 pt-2 border-t border-slate-200 page-break-avoid">
+            <div className="text-right text-[10pt] mb-3 font-medium">
               Ditetapkan di: <b>{signatureCity}</b><br />
               Pada tanggal: <b>{formattedSignatureDate.split(",")[1] || formattedSignatureDate}</b>
             </div>
 
             {/* Tabel Tanda Tangan Saksi */}
             {saksiList && saksiList.length > 0 && (
-              <div className="mb-6">
-                <div className="text-[10pt] font-bold text-center mb-2 uppercase">
+              <div className="mb-4">
+                <div className="text-[9.5pt] font-bold text-center mb-1.5 uppercase">
                   SAKSI-SAKSI PASANGAN CALON / PERWAKILAN PEMILIH:
                 </div>
-                <div className="grid grid-cols-3 gap-3 text-center text-[9.5pt]">
+                <div className="grid grid-cols-3 gap-3 text-center text-[9pt]">
                   {saksiList.slice(0, 3).map((saksi, sIdx) => (
-                    <div key={sIdx} className="border border-slate-300 p-2 rounded flex flex-col justify-between h-24">
+                    <div key={sIdx} className="border border-slate-300 p-1.5 rounded flex flex-col justify-between h-20">
                       <span className="font-bold text-slate-700 text-xs">Saksi {sIdx + 1}</span>
                       <div className="text-xs text-slate-400 italic">(................................)</div>
-                      <span className="font-medium text-slate-800 text-[9pt]">{saksi}</span>
+                      <span className="font-medium text-slate-800">{saksi}</span>
                     </div>
                   ))}
                 </div>
@@ -387,40 +420,38 @@ export default function PrintBeritaAcaraView({
             )}
 
             {/* Tanda Tangan Panitia & Kepala Sekolah */}
-            <div className="grid grid-cols-2 gap-8 text-center text-[10pt] mt-4">
+            <div className="grid grid-cols-2 gap-8 text-center text-[9.5pt] mt-3">
               {/* Kolom Kiri: Sekretaris */}
-              <div className="flex flex-col justify-between h-36">
+              <div className="flex flex-col justify-between h-28">
                 <div>
                   <p className="font-bold uppercase">Sekretaris Panitia,</p>
                 </div>
                 <div>
-                  <p className="font-black underline uppercase text-[10.5pt]">{committeeSecretary}</p>
-                  <p className="text-[9pt] text-slate-500 font-medium">NIP / NIS: -</p>
+                  <p className="font-bold underline text-[10.5pt]">{committeeSecretary}</p>
                 </div>
               </div>
 
               {/* Kolom Kanan: Ketua Panitia */}
-              <div className="flex flex-col justify-between h-36">
+              <div className="flex flex-col justify-between h-28">
                 <div>
                   <p className="font-bold uppercase">Ketua Panitia Pemilihan,</p>
                 </div>
                 <div>
-                  <p className="font-black underline uppercase text-[10.5pt]">{committeeChairman}</p>
-                  <p className="text-[9pt] text-slate-500 font-medium">NIP / NIS: -</p>
+                  <p className="font-bold underline text-[10.5pt]">{committeeChairman}</p>
                 </div>
               </div>
             </div>
 
             {/* Mengetahui Kepala Sekolah (Tengah Bawah) */}
-            <div className="text-center text-[10pt] mt-6 flex flex-col items-center">
-              <p className="font-bold uppercase mb-1">Mengetahui,</p>
-              <p className="font-bold uppercase text-[10.5pt]">{headmasterName.includes("Kepala") ? headmasterName : `Kepala ${schoolName}`}</p>
+            <div className="text-center text-[9.5pt] mt-4 flex flex-col items-center">
+              <p className="font-bold uppercase mb-0.5">Mengetahui,</p>
+              <p className="font-bold uppercase text-[10pt]">{headmasterName.includes("Kepala") ? headmasterName : `Kepala ${schoolName}`}</p>
               
-              <div className="h-24"></div>
+              <div className="h-20"></div>
 
               <div>
-                <p className="font-black underline uppercase text-[11pt]">{headmasterName}</p>
-                <p className="text-[9.5pt] text-slate-700 font-mono">NIP. {headmasterNip}</p>
+                <p className="font-bold underline text-[10.5pt]">{headmasterName}</p>
+                <p className="text-[9pt] text-slate-700 font-mono">NIP. {headmasterNip}</p>
               </div>
             </div>
           </div>
