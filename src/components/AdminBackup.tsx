@@ -13,6 +13,9 @@ export default function AdminBackup() {
   const [filePreview, setFilePreview] = useState<{
     exportedAt?: string;
     appName?: string;
+    schoolName?: string;
+    eventDate?: string;
+    committeeChairman?: string;
     candidatesCount?: number;
     votersCount?: number;
     votesCount?: number;
@@ -81,6 +84,9 @@ export default function AdminBackup() {
           setFilePreview({
             exportedAt: parsed.exportedAt,
             appName: parsed.appName,
+            schoolName: parsed.data?.settings?.schoolName,
+            eventDate: parsed.data?.settings?.eventDate,
+            committeeChairman: parsed.data?.settings?.committeeChairman,
             candidatesCount: parsed.data.candidates?.length || 0,
             votersCount: parsed.data.voters?.length || 0,
             votesCount: parsed.data.votes?.length || 0,
@@ -124,7 +130,10 @@ export default function AdminBackup() {
       html: `
         <div style="text-align:left;font-size:0.85rem;color:#475569;background:#f8fafc;padding:12px;border-radius:12px;border:1px solid #e2e8f0;margin-top:8px;">
           <p style="margin-bottom:6px;"><b>⚠️ Perhatian:</b> Seluruh data saat ini akan ditimpa dengan data dari file backup:</p>
-          <ul style="list-style-type:disc;padding-left:18px;margin:0;">
+          <ul style="list-style-type:disc;padding-left:18px;margin:0;line-height:1.6;">
+            ${filePreview.schoolName ? `<li>Instansi/Sekolah: <b>${filePreview.schoolName}</b></li>` : ""}
+            ${filePreview.eventDate ? `<li>Jadwal TPS: <b>${filePreview.eventDate}</b></li>` : ""}
+            ${filePreview.committeeChairman ? `<li>Panitia Pemilihan: <b>${filePreview.committeeChairman}</b></li>` : ""}
             <li>Kandidat: <b>${filePreview.candidatesCount} data</b></li>
             <li>DPT (Pemilih): <b>${filePreview.votersCount} data</b></li>
             <li>Suara Masuk: <b>${filePreview.votesCount} data</b></li>
@@ -272,6 +281,12 @@ export default function AdminBackup() {
                 <span className="text-emerald-500 font-bold">✓</span> Pengaturan & Aktivasi Pemilihan
               </li>
               <li className="flex items-center gap-2">
+                <span className="text-emerald-500 font-bold">✓</span> Identitas Sekolah / Instansi & Jadwal TPS
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-emerald-500 font-bold">✓</span> Data Panitia Pemilihan / KPPS & Pejabat
+              </li>
+              <li className="flex items-center gap-2">
                 <span className="text-emerald-500 font-bold">✓</span> Seluruh Paslon (PILKOSIS, PKS, MPK)
               </li>
               <li className="flex items-center gap-2">
@@ -321,6 +336,8 @@ export default function AdminBackup() {
                   <span className="text-[10px] bg-pink-200 px-2 py-0.5 rounded-full">Valid</span>
                 </div>
                 <div>Tanggal Ekspor: <b>{new Date(filePreview.exportedAt || "").toLocaleString("id-ID")}</b></div>
+                {filePreview.schoolName && <div>Sekolah / Instansi: <b>{filePreview.schoolName}</b></div>}
+                {filePreview.eventDate && <div>Jadwal TPS: <b>{filePreview.eventDate}</b></div>}
                 <div>Jumlah Kandidat: <b>{filePreview.candidatesCount}</b></div>
                 <div>Jumlah Pemilih (DPT): <b>{filePreview.votersCount}</b></div>
                 <div>Jumlah Suara: <b>{filePreview.votesCount}</b></div>

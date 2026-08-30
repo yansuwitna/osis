@@ -989,14 +989,32 @@ export async function restoreDatabase(jsonString: string) {
             activePilcosis: settings.activePilcosis ?? true,
             activePks: settings.activePks ?? false,
             activeMpk: settings.activeMpk ?? false,
-            title: settings.title || "PEMILIHAN OSIS, PKS & MPK",
+            title: settings.title ?? "PEMILIHAN OSIS, PKS & MPK",
+            schoolName: settings.schoolName ?? "SMA / SMK NEGERI 1 INDONESIA",
+            eventDate: settings.eventDate ?? "Senin, 15 September 2026",
+            eventTime: settings.eventTime ?? "08:00 - 12:00 WIB",
+            eventPlace: settings.eventPlace ?? "Bilik Suara Lab Komputer",
+            signatureCity: settings.signatureCity ?? "Karangasem",
+            committeeChairman: settings.committeeChairman ?? "Ketua Panitia",
+            committeeSecretary: settings.committeeSecretary ?? "Sekretaris Panitia",
+            headmasterName: settings.headmasterName ?? "Kepala Sekolah",
+            headmasterNip: settings.headmasterNip ?? "-",
           },
           create: {
             id: "active_setting",
             activePilcosis: settings.activePilcosis ?? true,
             activePks: settings.activePks ?? false,
             activeMpk: settings.activeMpk ?? false,
-            title: settings.title || "PEMILIHAN OSIS, PKS & MPK",
+            title: settings.title ?? "PEMILIHAN OSIS, PKS & MPK",
+            schoolName: settings.schoolName ?? "SMA / SMK NEGERI 1 INDONESIA",
+            eventDate: settings.eventDate ?? "Senin, 15 September 2026",
+            eventTime: settings.eventTime ?? "08:00 - 12:00 WIB",
+            eventPlace: settings.eventPlace ?? "Bilik Suara Lab Komputer",
+            signatureCity: settings.signatureCity ?? "Karangasem",
+            committeeChairman: settings.committeeChairman ?? "Ketua Panitia",
+            committeeSecretary: settings.committeeSecretary ?? "Sekretaris Panitia",
+            headmasterName: settings.headmasterName ?? "Kepala Sekolah",
+            headmasterNip: settings.headmasterNip ?? "-",
           },
         });
       }
@@ -1057,7 +1075,11 @@ export async function restoreDatabase(jsonString: string) {
     revalidatePath("/admin/upload-voters");
     revalidatePath("/admin/invitations");
     revalidatePath("/admin/settings");
+    revalidatePath("/admin/committee");
+    revalidatePath("/admin/backup");
+    revalidatePath("/admin/print-invitations");
     revalidatePath("/vote");
+    revalidatePath("/");
 
     return {
       success: true,
