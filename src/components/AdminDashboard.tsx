@@ -86,7 +86,16 @@ export default function AdminDashboard({ initialStats }: AdminDashboardProps) {
           <p className="text-slate-400 text-sm mt-1">{stats.settings.title} · Pantau statistik perolehan suara.</p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href="/results"
+            target="_blank"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-xl transition-all duration-300 transform active:scale-95 text-xs shadow-md shadow-emerald-200 flex items-center gap-1.5"
+          >
+            <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+            <span>Layar Quick Count (Live) ↗</span>
+          </Link>
+
           <Link
             href="/admin/berita-acara"
             className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-bold py-2 px-4 rounded-xl transition-all duration-300 transform active:scale-95 text-xs shadow-md shadow-violet-200 flex items-center gap-2"
@@ -103,7 +112,7 @@ export default function AdminDashboard({ initialStats }: AdminDashboardProps) {
             <svg className={`w-4 h-4 ${isPending ? "animate-spin" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
             </svg>
-            {isPending ? "Memuat..." : "Refresh Realtime"}
+            {isPending ? "Memuat..." : "Refresh"}
           </button>
         </div>
       </div>

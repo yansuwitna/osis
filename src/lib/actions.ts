@@ -800,12 +800,58 @@ export async function deleteAllVotersAndData() {
 
 // Kosongkan SELURUH DATA database (Suara, Pemilih/DPT, Kandidat, dan Reset Pengaturan/Panitia - HANYA SISAKAN AKUN ADMIN)
 export async function wipeEntireDatabase() {
+  return wipeSelectedData({
+    deleteVotes: true,
+    deleteVoters: true,
+    deleteCandidates: true,
+    resetSettings: true,
+  });
+}
+
+export interface WipeOptions {
+  deleteVotes?: boolean;
+  deleteVoters?: boolean;
+  deleteCandidates?: boolean;
+  resetSettings?: boolean;
+}
+
+// Bersihkan data sesuai pilihan centang
+export async function wipeSelectedData(options: WipeOptions) {
   try {
     await db.$transaction(async (tx: Prisma.TransactionClient) => {
-      await tx.vote.deleteMany();
-      await tx.voter.deleteMany();
-      await tx.candidate.deleteMany();
-      await tx.electionSetting.deleteMany();
+      // Jika hapus suara, hapus pemilih, atau hapus kandidat: hapus seluruh vote
+      if (options.deleteVotes || options.deleteVoters || options.deleteCandidates) {
+        await tx.vote.deleteMany();
+      }
+
+      // Hapus data pemilih DPT
+      if (options.deleteVoters) {
+        await tx.voter.deleteMany();
+      } else if (options.deleteVotes) {
+        // Jika HANYA hapus suara (pemilih tetap ada), reset status memilih menjadi false
+        await tx.voter.updateMany({
+          data: {
+            voted: false,
+            votedAt: null,
+            votedPilcosis: false,
+            votedPilcosisAt: null,
+            votedPks: false,
+            votedPksAt: null,
+            votedMpk: false,
+            votedMpkAt: null,
+          },
+        });
+      }
+
+      // Hapus data kandidat paslon
+      if (options.deleteCandidates) {
+        await tx.candidate.deleteMany();
+      }
+
+      // Reset pengaturan pemilihan & panitia ke default
+      if (options.resetSettings) {
+        await tx.electionSetting.deleteMany();
+      }
     });
 
     revalidatePath("/admin");
@@ -813,6 +859,7 @@ export async function wipeEntireDatabase() {
     revalidatePath("/admin/voters");
     revalidatePath("/admin/upload-voters");
     revalidatePath("/admin/invitations");
+    revalidatePath("/admin/tokens");
     revalidatePath("/admin/settings");
     revalidatePath("/admin/committee");
     revalidatePath("/admin/backup");
@@ -820,7 +867,7 @@ export async function wipeEntireDatabase() {
     revalidatePath("/");
     return { success: true };
   } catch (error: any) {
-    return { success: false, error: "Gagal mengosongkan seluruh database: " + error.message };
+    return { success: false, error: "Gagal membersihkan data: " + error.message };
   }
 }
 
@@ -867,7 +914,7 @@ export async function getElectionStats(type?: ElectionType) {
     // Suara MPK
     const votesMpk = await db.vote.count({ where: { type: "MPK" } });
 
-    // Ambil perolehan kandidat
+    // Ambil perolehan kandidat beserta foto dan noUrut
     const candidates = await db.candidate.findMany({
       where: type ? { type } : undefined,
       select: {
@@ -875,6 +922,7 @@ export async function getElectionStats(type?: ElectionType) {
         type: true,
         noUrut: true,
         name: true,
+        photoUrl: true,
         _count: {
           select: { votes: true },
         },
@@ -885,8 +933,10 @@ export async function getElectionStats(type?: ElectionType) {
     const chartData = candidates.map((c) => ({
       id: c.id,
       type: c.type,
+      noUrut: c.noUrut,
       name: `No. ${c.noUrut}`,
       fullName: c.name,
+      photoUrl: c.photoUrl,
       votes: c._count.votes,
     }));
 

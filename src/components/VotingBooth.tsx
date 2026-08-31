@@ -88,18 +88,36 @@ export default function VotingBooth({ voter, candidates, settings }: VotingBooth
     const result = await Swal.fire({
       title: `Konfirmasi Pilihan ${currentStage}`,
       html: `
-        <div style="text-align:center;padding:8px 0;">
+        <div style="text-align:center;padding:4px 0;">
           <p style="color:#6b7280;font-size:0.85rem;margin-bottom:12px;">Untuk posisi: <b>${stageLabel}</b></p>
-          <div style="display:inline-block;background:linear-gradient(135deg, #ede9fe, #fce7f3);border:2px solid #c4b5fd;border-radius:20px;padding:18px 28px;margin-bottom:14px;">
-            <div style="font-size:1.5rem;font-weight:900;background:linear-gradient(135deg,#7c3aed,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px;">Kandidat ${candidate.noUrut}</div>
-            <div style="font-size:1.1rem;font-weight:700;color:#1e1b4b;">${candidate.name}</div>
+          
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg, #ede9fe, #fce7f3);border:2px solid #c4b5fd;border-radius:20px;padding:16px 20px;margin-bottom:14px;box-shadow:0 4px 10px -2px rgba(124,58,237,0.1);">
+            <!-- Foto Kandidat -->
+            <div style="position:relative;width:130px;height:130px;border-radius:18px;overflow:hidden;border:3px solid #ffffff;box-shadow:0 8px 16px -4px rgba(124,58,237,0.3);margin-bottom:12px;background:#f3e8ff;">
+              ${
+                candidate.photoUrl
+                  ? `<img src="${candidate.photoUrl}" alt="${candidate.name}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none';if(this.parentElement)this.parentElement.innerHTML='<div style=\\'display:flex;align-items:center;justify-content:center;height:100%;font-size:45px;\\'>👤</div>';" />`
+                  : `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:45px;color:#c084fc;">👤</div>`
+              }
+              <!-- Badge No Urut -->
+              <div style="position:absolute;top:6px;left:6px;width:32px;height:32px;background:linear-gradient(135deg,#7c3aed,#ec4899);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#ffffff;font-weight:900;font-size:16px;box-shadow:0 2px 6px rgba(0,0,0,0.25);border:1.5px solid #ffffff;">
+                ${candidate.noUrut}
+              </div>
+            </div>
+
+            <div style="font-size:1.35rem;font-weight:900;background:linear-gradient(135deg,#7c3aed,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:2px;">
+              Kandidat Nomor ${candidate.noUrut}
+            </div>
+            <div style="font-size:1.05rem;font-weight:800;color:#1e1b4b;max-width:320px;line-height:1.35;">
+              ${candidate.name}
+            </div>
           </div>
+
           <p style="color:#64748b;font-size:0.85rem;margin:0;">
-            ${isLastStage ? '<strong style="color:#f97316">Ini adalah tahap terakhir. Suara Anda akan langsung dikirim ke sistem.</strong>' : 'Setelah ini, Anda akan lanjut ke pemilihan berikutnya.'}
+            ${isLastStage ? '<strong style="color:#f97316">⚠️ Ini adalah tahap terakhir. Suara Anda akan langsung dikirim ke sistem.</strong>' : 'Setelah ini, Anda akan lanjut ke tahap pemilihan berikutnya.'}
           </p>
         </div>
       `,
-      icon: "question",
       showCancelButton: true,
       confirmButtonColor: "#7c3aed",
       cancelButtonColor: "#94a3b8",
@@ -192,10 +210,19 @@ export default function VotingBooth({ voter, candidates, settings }: VotingBooth
       <header className="relative z-30 border-b border-violet-100 backdrop-blur-xl bg-white/75 sticky top-0">
         <div className="max-w-7xl mx-auto px-6 py-3.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg shadow-violet-400/30">
-              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-              </svg>
+            <div className="w-10 h-10 bg-white border border-violet-200 rounded-xl flex items-center justify-center p-1 shadow-md shadow-violet-300/30 overflow-hidden">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/logo.png"
+                alt="Logo OSIS"
+                className="max-h-8 max-w-8 object-contain"
+                onError={(e) => {
+                  const img = e.target as HTMLImageElement;
+                  if (!img.src.includes("logo.jpg")) {
+                    img.src = "/logo.jpg";
+                  }
+                }}
+              />
             </div>
             <div>
               <h1 className="font-black text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-pink-600 text-sm leading-tight">

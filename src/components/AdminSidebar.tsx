@@ -17,6 +17,7 @@ export default function AdminSidebar() {
 
   const navItems = [
     { name: "Dashboard Hasil", icon: "📊", path: "/admin" },
+    { name: "Live Quick Count", icon: "🔴", path: "/results" },
     { name: "Berita Acara Hasil", icon: "📜", path: "/admin/berita-acara" },
     { name: "Pengaturan Pemilihan", icon: "⚙️", path: "/admin/settings" },
     { name: "Data Panitia", icon: "👔", path: "/admin/committee" },

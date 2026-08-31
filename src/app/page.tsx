@@ -37,16 +37,7 @@ export default function Home() {
     try {
       const res = await voterLogin(token);
       if (res.success) {
-        await Swal.fire({
-          icon: "success",
-          title: "Akses Diberikan!",
-          text: "Token valid. Mengarahkan Anda ke bilik suara digital...",
-          confirmButtonColor: "#7c3aed",
-          confirmButtonText: "Masuk Sekarang",
-          timer: 1800,
-          timerProgressBar: true,
-          showConfirmButton: false,
-        });
+        // Langsung arahkan ke bilik suara tanpa popup SweetAlert
         router.push("/vote");
       } else {
         setLoading(false);
@@ -80,11 +71,19 @@ export default function Home() {
       {/* Dot Pattern Overlay */}
       <div className="absolute inset-0 dot-bg opacity-40 pointer-events-none" />
 
-      {/* Admin link */}
-      <div className="absolute top-5 right-5 z-20">
+      {/* Top Navigation Links */}
+      <div className="absolute top-5 left-5 right-5 z-20 flex items-center justify-between pointer-events-none">
+        <Link
+          href="/results"
+          className="pointer-events-auto flex items-center gap-2 text-xs font-bold text-emerald-700 hover:text-emerald-800 transition-all duration-300 bg-emerald-50/90 hover:bg-emerald-100 border border-emerald-200 px-4 py-2 rounded-full backdrop-blur-md shadow-sm hover:shadow-md"
+        >
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span>📊 Live Quick Count</span>
+        </Link>
+
         <Link
           href="/admin/login"
-          className="flex items-center gap-2 text-xs font-semibold text-violet-600 hover:text-violet-800 transition-all duration-300 bg-white/80 hover:bg-white border border-violet-200 px-4 py-2 rounded-full backdrop-blur-md shadow-sm hover:shadow-md"
+          className="pointer-events-auto flex items-center gap-2 text-xs font-semibold text-violet-600 hover:text-violet-800 transition-all duration-300 bg-white/80 hover:bg-white border border-violet-200 px-4 py-2 rounded-full backdrop-blur-md shadow-sm hover:shadow-md"
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
