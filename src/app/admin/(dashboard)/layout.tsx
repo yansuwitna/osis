@@ -15,11 +15,11 @@ export default async function AdminDashboardLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-violet-50/50 via-white to-pink-50/30">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-gradient-to-br from-violet-50/50 via-white to-pink-50/30 w-full overflow-x-hidden">
       <AdminSidebar />
-      <div className="flex-1 flex flex-col h-screen overflow-y-auto">
+      <main className="flex-1 flex flex-col min-w-0 w-full min-h-0 overflow-y-auto">
         {children}
-      </div>
+      </main>
     </div>
   );
 }
