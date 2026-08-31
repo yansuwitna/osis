@@ -6,6 +6,7 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { writeFile, mkdir, unlink } from "fs/promises";
 import path from "path";
+import { notifyVoteUpdate } from "./events";
 
 // GENERATE 6-DIGIT NUMERIC ONLY TOKEN (0-9)
 function generateNumericToken(): string {
@@ -311,6 +312,9 @@ export async function submitVoteElection(votes: { type: ElectionType; candidateI
 
     // Hapus sesi voter
     cookieStore.delete("voter_id");
+
+    // Picu Server-Sent Events (SSE) push seketika ke semua layar proyektor / quick count
+    notifyVoteUpdate();
 
     return { success: true };
   } catch (error: any) {
@@ -865,6 +869,7 @@ export async function wipeSelectedData(options: WipeOptions) {
     revalidatePath("/admin/backup");
     revalidatePath("/vote");
     revalidatePath("/");
+    notifyVoteUpdate();
     return { success: true };
   } catch (error: any) {
     return { success: false, error: "Gagal membersihkan data: " + error.message };
@@ -892,6 +897,7 @@ export async function clearAllVoteData() {
 
     revalidatePath("/admin");
     revalidatePath("/vote");
+    notifyVoteUpdate();
     return { success: true };
   } catch (error: any) {
     return { success: false, error: "Gagal mereset data voting: " + error.message };

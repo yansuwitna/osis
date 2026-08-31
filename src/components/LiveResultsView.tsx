@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { getElectionStats } from "@/lib/actions";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 interface CandidateStats {
@@ -39,7 +38,8 @@ export default function LiveResultsView({ initialStats }: LiveResultsViewProps) 
   const [stats, setStats] = useState<StatsData>(initialStats);
   const [activeTab, setActiveTab] = useState<"PILKOSIS" | "PKS" | "MPK">("PILKOSIS");
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [lastSyncTime, setLastSyncTime] = useState<Date>(new Date());
+  const [isStreamConnected, setIsStreamConnected] = useState(true);
+  const [lastPushTime, setLastPushTime] = useState<Date>(new Date());
 
   // Set default active tab based on active election types
   useEffect(() => {
@@ -52,27 +52,45 @@ export default function LiveResultsView({ initialStats }: LiveResultsViewProps) 
     }
   }, [stats.settings.activePilcosis, stats.settings.activePks, stats.settings.activeMpk]);
 
-  // Silent real-time sync with database in the background (no page reload)
-  const syncLiveData = useCallback(async () => {
-    try {
-      const res = await getElectionStats();
-      if (res && (res as any).chartData) {
-        setStats(res as any);
-        setLastSyncTime(new Date());
-      }
-    } catch (err) {
-      console.error("Silent sync error:", err);
-    }
-  }, []);
-
-  // Real-time interval: auto-sync every 2 seconds seamlessly
+  // Server-Sent Events (SSE): Koneksi Stream Push Instan Tanpa Polling
   useEffect(() => {
-    const interval = setInterval(() => {
-      syncLiveData();
-    }, 2000);
+    let eventSource: EventSource | null = null;
 
-    return () => clearInterval(interval);
-  }, [syncLiveData]);
+    try {
+      eventSource = new EventSource("/api/live-stream");
+
+      eventSource.onopen = () => {
+        setIsStreamConnected(true);
+      };
+
+      eventSource.onmessage = (event) => {
+        try {
+          const freshData = JSON.parse(event.data);
+          if (freshData && freshData.chartData) {
+            setStats(freshData);
+            setLastPushTime(new Date());
+            setIsStreamConnected(true);
+          }
+        } catch (err) {
+          console.error("Error membaca data stream SSE:", err);
+        }
+      };
+
+      eventSource.onerror = () => {
+        setIsStreamConnected(false);
+        // Browser native EventSource akan otomatis me-reconnect secara mandiri
+      };
+    } catch (err) {
+      console.error("Gagal inisialisasi SSE EventSource:", err);
+      setIsStreamConnected(false);
+    }
+
+    return () => {
+      if (eventSource) {
+        eventSource.close();
+      }
+    };
+  }, []);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -152,9 +170,13 @@ export default function LiveResultsView({ initialStats }: LiveResultsViewProps) 
                 <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-purple-600 to-pink-600 text-sm sm:text-base leading-tight">
                   LIVE QUICK COUNT
                 </span>
-                <span className="inline-flex items-center gap-1 bg-emerald-500/10 text-emerald-600 border border-emerald-300 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                  <span>LIVE REAL-TIME</span>
+                <span className={`inline-flex items-center gap-1.5 border text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider transition-all ${
+                  isStreamConnected
+                    ? "bg-emerald-500/10 text-emerald-700 border-emerald-300"
+                    : "bg-amber-500/10 text-amber-700 border-amber-300"
+                }`}>
+                  <span className={`w-2 h-2 rounded-full ${isStreamConnected ? "bg-emerald-500 animate-ping" : "bg-amber-500"}`} />
+                  <span>{isStreamConnected ? "SSE STREAM AKTIF" : "MENYAMBUNGKAN..."}</span>
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 font-semibold tracking-wide">
@@ -205,7 +227,7 @@ export default function LiveResultsView({ initialStats }: LiveResultsViewProps) 
                 {electionTitle}
               </h2>
               <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                Data terhubung secara real-time. Angka dan grafik persentase otomatis bergerak saat suara dicoblos.
+                Menggunakan <b>Server-Sent Events (SSE)</b>. Data suara langsung terdorong ke layar seketika saat tombol coblos ditekan.
               </p>
             </div>
 
@@ -301,7 +323,7 @@ export default function LiveResultsView({ initialStats }: LiveResultsViewProps) 
               <span>🏆</span> Perolehan Suara Pasangan Calon ({tabCandidates.length} Paslon)
             </h3>
             <span className="text-xs text-slate-400 font-medium">
-              Sinkronisasi: <b>{lastSyncTime.toLocaleTimeString("id-ID")}</b>
+              Update Terakhir: <b>{lastPushTime.toLocaleTimeString("id-ID")}</b>
             </span>
           </div>
 
