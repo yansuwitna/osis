@@ -17,6 +17,7 @@ export default async function PrintVotersPage({
   const selectedClass = params.class || "ALL";
   const search = params.q || "";
   const filterStatus = params.status || "all";
+  const showToken = params.showToken !== "0";
 
   const filteredVoters = allVoters.filter((v) => {
     const matchClass = selectedClass === "ALL" || v.className === selectedClass;
@@ -39,6 +40,7 @@ export default async function PrintVotersPage({
       voters={filteredVoters}
       settings={settings}
       selectedClass={selectedClass}
+      showToken={showToken}
     />
   );
 }

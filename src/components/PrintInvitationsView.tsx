@@ -29,6 +29,7 @@ interface PrintInvitationsViewProps {
   date?: string;
   time?: string;
   place?: string;
+  showToken?: boolean;
 }
 
 export default function PrintInvitationsView({
@@ -38,6 +39,7 @@ export default function PrintInvitationsView({
   date,
   time,
   place,
+  showToken = false,
 }: PrintInvitationsViewProps) {
   const customSchoolName = schoolName || settings.schoolName || "SMA / SMK NEGERI 1 INDONESIA";
   const customDate = date || settings.eventDate || "Senin, 15 September 2026";
@@ -225,20 +227,22 @@ export default function PrintInvitationsView({
                     <div className="border border-slate-600 rounded p-1 bg-slate-50/70 flex items-center justify-between gap-1">
                       <div className="shrink-0">
                         <span className="text-[6.5px] font-black text-black uppercase tracking-wider block leading-none">
-                          KOTAK TOKEN (DIISI PANITIA)
+                          {showToken ? "TOKEN PEMILIH" : "KOTAK TOKEN (DIISI PANITIA)"}
                         </span>
                         <span className="text-[5px] text-slate-500 block leading-none mt-0.5">
-                          Ditulis petugas KPPS di TPS
+                          {showToken ? "Rahasia — jangan diperlihatkan" : "Ditulis petugas KPPS di TPS"}
                         </span>
                       </div>
 
                       {/* 6 Kotak Angka Memanjang */}
                       <div className="flex items-center justify-center gap-1">
-                        {[0, 1, 2, 3, 4, 5].map((box) => (
+                        {voter.token.split("").map((digit, box) => (
                           <div
                             key={box}
-                            className="w-4 h-5 border border-slate-900 bg-white rounded-xs flex items-center justify-center text-[7px]"
-                          />
+                            className="w-4 h-5 border border-slate-900 bg-white rounded-xs flex items-center justify-center text-[7px] font-mono font-black"
+                          >
+                            {showToken ? digit : ""}
+                          </div>
                         ))}
                       </div>
                     </div>

@@ -25,6 +25,7 @@ export default function AdminSidebar() {
     { name: "Upload DPT / Pemilih", icon: "📥", path: "/admin/upload-voters" },
     { name: "Cetak Surat Panggilan", icon: "✉️", path: "/admin/invitations" },
     { name: "Cetak Daftar Pemilih", icon: "🖨️", path: "/admin/voters" },
+    { name: "Cetak Token", icon: "🎟️", path: "/admin/tokens" },
     { name: "Backup & Restore", icon: "💾", path: "/admin/backup" },
     { name: "Ubah Password", icon: "🔑", path: "/admin/password" },
   ];

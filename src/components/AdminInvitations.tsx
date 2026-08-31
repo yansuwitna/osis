@@ -33,6 +33,7 @@ export default function AdminInvitations({ initialVoters, settings }: AdminInvit
   const [voters] = useState<Voter[]>(initialVoters);
   const [selectedClass, setSelectedClass] = useState("ALL");
   const [search, setSearch] = useState("");
+  const [showToken, setShowToken] = useState(false);
   const [customSchoolName, setCustomSchoolName] = useState(
     settings.schoolName || "SMA / SMK NEGERI 1 INDONESIA"
   );
@@ -78,6 +79,7 @@ export default function AdminInvitations({ initialVoters, settings }: AdminInvit
       date: customDate,
       time: customTime,
       place: customPlace,
+      showToken: showToken ? "1" : "0",
     });
 
     window.open(`/admin/print-invitations?${queryParams.toString()}`, "_blank");
@@ -162,6 +164,38 @@ export default function AdminInvitations({ initialVoters, settings }: AdminInvit
               className="w-full bg-violet-50/50 border border-violet-200 rounded-xl py-2 px-3 text-xs text-slate-700 focus:outline-none focus:border-violet-500"
             />
           </div>
+        </div>
+
+        {/* Opsi Isi Token */}
+        <div className="bg-white border border-violet-100 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center gap-3">
+          <span className="text-xs font-bold text-violet-600 uppercase tracking-wider shrink-0">
+            Kotak Token:
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowToken(false)}
+              className={`py-2 px-4 rounded-xl text-xs font-bold transition-all border-2 ${
+                !showToken
+                  ? "bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-300/30"
+                  : "bg-white text-slate-600 border-violet-200 hover:border-violet-400 hover:bg-violet-50"
+              }`}
+            >
+              ⬜ Kosong (Diisi Panitia)
+            </button>
+            <button
+              onClick={() => setShowToken(true)}
+              className={`py-2 px-4 rounded-xl text-xs font-bold transition-all border-2 ${
+                showToken
+                  ? "bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-300/30"
+                  : "bg-white text-slate-600 border-violet-200 hover:border-violet-400 hover:bg-violet-50"
+              }`}
+            >
+              🔢 Isi Token Otomatis
+            </button>
+          </div>
+          <span className="text-[11px] text-slate-400">
+            {showToken ? "Token 6 angka akan tercetak di kotak." : "Kotak token dikosongkan, diisi manual oleh petugas."}
+          </span>
         </div>
 
         {/* Filter Bar */}
@@ -283,19 +317,21 @@ export default function AdminInvitations({ initialVoters, settings }: AdminInvit
               <div className="bg-violet-50/70 border border-violet-300 rounded-xl p-1.5 flex items-center justify-between gap-1">
                 <div>
                   <span className="text-[7.5px] font-black text-violet-800 uppercase tracking-wider block leading-none">
-                    KOTAK TOKEN (DIISI PANITIA)
+                    {showToken ? "TOKEN PEMILIH" : "KOTAK TOKEN (DIISI PANITIA)"}
                   </span>
                   <span className="text-[6.5px] text-slate-400 block mt-0.5 leading-none">
-                    Ditulis petugas KPPS di TPS
+                    {showToken ? "Rahasia — jangan diperlihatkan" : "Ditulis petugas KPPS di TPS"}
                   </span>
                 </div>
-                {/* 6 Kotak Kosong */}
+                {/* 6 Kotak Token */}
                 <div className="flex items-center justify-center gap-1">
-                  {[0, 1, 2, 3, 4, 5].map((i) => (
+                  {voter.token.split("").map((digit, i) => (
                     <div
                       key={i}
-                      className="w-5 h-6.5 border border-dashed border-violet-400 bg-white rounded flex items-center justify-center text-[7px]"
-                    />
+                      className="w-5 h-6.5 border border-dashed border-violet-400 bg-white rounded flex items-center justify-center text-[7px] font-mono font-black text-violet-700"
+                    >
+                      {showToken ? digit : ""}
+                    </div>
                   ))}
                 </div>
               </div>

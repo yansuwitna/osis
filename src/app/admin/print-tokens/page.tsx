@@ -1,9 +1,9 @@
 import { getVoters, getElectionSettings } from "@/lib/actions";
-import PrintInvitationsView from "@/components/PrintInvitationsView";
+import PrintTokensView from "@/components/PrintTokensView";
 
 export const dynamic = "force-dynamic";
 
-export default async function PrintInvitationsPage({
+export default async function PrintTokensPage({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | undefined }>;
@@ -16,6 +16,7 @@ export default async function PrintInvitationsPage({
 
   const selectedClass = params.class || "ALL";
   const search = params.q || "";
+  const perPage = params.perPage === "60" ? 60 : 30;
 
   const filteredVoters = allVoters.filter((v) => {
     const matchClass = selectedClass === "ALL" || v.className === selectedClass;
@@ -23,19 +24,18 @@ export default async function PrintInvitationsPage({
       !search ||
       (v.code && v.code.toLowerCase().includes(search.toLowerCase())) ||
       (v.name && v.name.toLowerCase().includes(search.toLowerCase())) ||
-      v.token.includes(search);
+      v.token.toLowerCase().includes(search.toLowerCase()) ||
+      v.className.toLowerCase().includes(search.toLowerCase());
+
     return matchClass && matchSearch;
   });
 
   return (
-    <PrintInvitationsView
+    <PrintTokensView
       voters={filteredVoters}
       settings={settings}
-      schoolName={params.school || settings.schoolName}
-      date={params.date || settings.eventDate}
-      time={params.time || settings.eventTime}
-      place={params.place || settings.eventPlace}
-      showToken={params.showToken === "1"}
+      selectedClass={selectedClass}
+      perPage={perPage}
     />
   );
 }

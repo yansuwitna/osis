@@ -29,12 +29,14 @@ interface PrintVotersViewProps {
   voters: Voter[];
   settings: Settings;
   selectedClass: string;
+  showToken?: boolean;
 }
 
 export default function PrintVotersView({
   voters,
   settings,
   selectedClass,
+  showToken = true,
 }: PrintVotersViewProps) {
   const schoolName = settings.schoolName || "SMA / SMK NEGERI 1 INDONESIA";
   const electionTitle = settings.title || "PEMILIHAN OSIS, PKS & MPK";
@@ -93,7 +95,7 @@ export default function PrintVotersView({
             Pratinjau Cetak Daftar Pemilih Tetap ({voters.length} Siswa)
           </h2>
           <p className="text-xs text-slate-500">
-            Kelompok: {selectedClass === "ALL" ? "Semua Kelompok" : selectedClass} | Siap dicetak / diekspor ke PDF resmi.
+            Kelompok: {selectedClass === "ALL" ? "Semua Kelompok" : selectedClass} | {showToken ? "Dengan Token" : "Tanpa Token (Kosong)"} | Siap dicetak / diekspor ke PDF resmi.
           </p>
         </div>
 
@@ -142,7 +144,7 @@ export default function PrintVotersView({
                     PANITIA PELAKSANA {electionTitle}
                   </h3>
                   <h4 className="text-xs font-semibold text-black mt-0.5">
-                    DAFTAR PEMILIH TETAP (DPT) & DAFTAR TOKEN PEMILIHAN
+                    DAFTAR PEMILIH TETAP (DPT) {showToken ? "& DAFTAR TOKEN PEMILIHAN" : ""}
                   </h4>
                 </div>
 
@@ -179,7 +181,7 @@ export default function PrintVotersView({
                     <th className="p-2 border border-black w-10 text-center">NO</th>
                     <th className="p-2 border border-black w-24">KODE / NIS</th>
                     <th className="p-2 border border-black">NAMA LENGKAP</th>
-                    <th className="p-2 border border-black w-28 text-center">TOKEN</th>
+                    {showToken && <th className="p-2 border border-black w-28 text-center">TOKEN</th>}
                     <th className="p-2 border border-black w-28">KELOMPOK</th>
                     <th className="p-2 border border-black w-24 text-center">PARAF</th>
                   </tr>
@@ -190,9 +192,11 @@ export default function PrintVotersView({
                       <td className="p-2 border border-black text-center font-medium text-black">{index + 1}</td>
                       <td className="p-2 border border-black font-mono font-bold text-black">{voter.code || "-"}</td>
                       <td className="p-2 border border-black font-medium text-black">{voter.name || "(Nama Siswa)"}</td>
-                      <td className="p-2 border border-black font-mono font-extrabold text-black text-center tracking-widest">
-                        {voter.token}
-                      </td>
+                      {showToken && (
+                        <td className="p-2 border border-black font-mono font-extrabold text-black text-center tracking-widest">
+                          {voter.token}
+                        </td>
+                      )}
                       <td className="p-2 border border-black text-black">{voter.className}</td>
                       <td className="p-2 border border-black text-slate-400 font-mono text-[9px]">
                         {index + 1}. .........

@@ -40,10 +40,11 @@ export default function AdminVoters({ initialVoters, settings }: AdminVotersProp
   const [voters] = useState<Voter[]>(initialVoters);
   const [isPending, startTransition] = useTransition();
   
-  // State Filter Pencarian
+  // State Filter Pencarian & Opsi Token
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterClass, setFilterClass] = useState("ALL");
+  const [showToken, setShowToken] = useState(true);
 
   const schoolName = settings?.schoolName || "SMA / SMK NEGERI 1 INDONESIA";
   const electionTitle = settings?.title || "PEMILIHAN OSIS, PKS & MPK";
@@ -76,6 +77,7 @@ export default function AdminVoters({ initialVoters, settings }: AdminVotersProp
       class: filterClass,
       q: search,
       status: filterStatus,
+      showToken: showToken ? "1" : "0",
     });
 
     window.open(`/admin/print-voters?${queryParams.toString()}`, "_blank");
@@ -176,6 +178,32 @@ export default function AdminVoters({ initialVoters, settings }: AdminVotersProp
           </div>
 
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            {/* Opsi Isi Token */}
+            <div className="flex items-center gap-1 bg-violet-50/70 border-2 border-violet-200 rounded-xl p-1">
+              <button
+                type="button"
+                onClick={() => setShowToken(true)}
+                className={`py-1 px-2.5 rounded-lg text-xs font-bold transition-all ${
+                  showToken
+                    ? "bg-violet-600 text-white shadow-xs"
+                    : "text-slate-600 hover:text-violet-700"
+                }`}
+              >
+                🔢 Isi Token
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowToken(false)}
+                className={`py-1 px-2.5 rounded-lg text-xs font-bold transition-all ${
+                  !showToken
+                    ? "bg-violet-600 text-white shadow-xs"
+                    : "text-slate-600 hover:text-violet-700"
+                }`}
+              >
+                ⬜ Tanpa Token
+              </button>
+            </div>
+
             {/* Filter Kelompok / Kelas */}
             <select
               value={filterClass}
@@ -217,7 +245,7 @@ export default function AdminVoters({ initialVoters, settings }: AdminVotersProp
                   <th className="pb-3 pr-4 w-14 text-center">NO</th>
                   <th className="pb-3 pr-4">KODE / NIS</th>
                   <th className="pb-3 pr-4">NAMA LENGKAP</th>
-                  <th className="pb-3 pr-4">TOKEN 6 ANGKA</th>
+                  {showToken && <th className="pb-3 pr-4">TOKEN 6 ANGKA</th>}
                   <th className="pb-3 pr-4">KELOMPOK / KELAS</th>
                   <th className="pb-3 pr-4 text-center">STATUS</th>
                   <th className="pb-3 text-right w-16">AKSI</th>
@@ -229,9 +257,11 @@ export default function AdminVoters({ initialVoters, settings }: AdminVotersProp
                     <td className="py-3 pr-4 font-semibold text-slate-400 text-center">{index + 1}</td>
                     <td className="py-3 pr-4 font-mono font-bold text-slate-700">{voter.code || "-"}</td>
                     <td className="py-3 pr-4 font-medium text-slate-800">{voter.name || "(Nama Siswa)"}</td>
-                    <td className="py-3 pr-4 font-mono font-extrabold text-pink-600 tracking-widest text-xs sm:text-sm">
-                      {voter.token}
-                    </td>
+                    {showToken && (
+                      <td className="py-3 pr-4 font-mono font-extrabold text-pink-600 tracking-widest text-xs sm:text-sm">
+                        {voter.token}
+                      </td>
+                    )}
                     <td className="py-3 pr-4">
                       <span className="bg-violet-50 border border-violet-200 text-violet-700 px-2.5 py-1 rounded-md font-semibold text-[11px]">
                         {voter.className}
