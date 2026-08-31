@@ -224,7 +224,7 @@ export default function PrintInvitationsView({
                     </div>
 
                     {/* Bawah: Kotak Token Panjang Penuh */}
-                    <div className="border border-slate-600 rounded p-1 bg-slate-50/70 flex items-center justify-between gap-1">
+                    <div className="border border-black rounded p-1 bg-slate-50/70 flex items-center justify-between gap-1">
                       <div className="shrink-0">
                         <span className="text-[6.5px] font-black text-black uppercase tracking-wider block leading-none">
                           {showToken ? "TOKEN PEMILIH" : "KOTAK TOKEN (DIISI PANITIA)"}
@@ -234,12 +234,13 @@ export default function PrintInvitationsView({
                         </span>
                       </div>
 
-                      {/* 6 Kotak Angka Memanjang */}
+                      {/* 6 Kotak Angka Memanjang dengan Garis Hitam Jelas */}
                       <div className="flex items-center justify-center gap-1">
                         {voter.token.split("").map((digit, box) => (
                           <div
                             key={box}
-                            className="w-4 h-5 border border-slate-900 bg-white rounded-xs flex items-center justify-center text-[7px] font-mono font-black"
+                            style={{ border: "1.5px solid #000000" }}
+                            className="w-5.5 h-6.5 bg-white rounded flex items-center justify-center text-[11px] font-mono font-black text-black"
                           >
                             {showToken ? digit : ""}
                           </div>

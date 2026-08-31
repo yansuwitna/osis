@@ -324,11 +324,12 @@ export default function AdminInvitations({ initialVoters, settings }: AdminInvit
                   </span>
                 </div>
                 {/* 6 Kotak Token */}
-                <div className="flex items-center justify-center gap-1">
+                <div className="flex items-center justify-center gap-1.5">
                   {voter.token.split("").map((digit, i) => (
                     <div
                       key={i}
-                      className="w-5 h-6.5 border border-dashed border-violet-400 bg-white rounded flex items-center justify-center text-[7px] font-mono font-black text-violet-700"
+                      style={{ border: "2px solid #000000" }}
+                      className="w-7 h-8.5 bg-white rounded-lg flex items-center justify-center text-sm font-mono font-black text-slate-900 shadow-xs"
                     >
                       {showToken ? digit : ""}
                     </div>

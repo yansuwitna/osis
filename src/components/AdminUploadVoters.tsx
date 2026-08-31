@@ -70,6 +70,63 @@ export default function AdminUploadVoters({ initialVoters }: AdminUploadVotersPr
     setParsedPreview(parsed);
   };
 
+  // Hapus Pemilih dengan SweetAlert2
+  const handleDeleteVoter = async (voter: Voter) => {
+    const voterLabel = voter.name ? `"${voter.name}"` : `Token ${voter.token}`;
+    const result = await Swal.fire({
+      title: "Hapus Data Pemilih?",
+      html: `Apakah Anda yakin ingin menghapus data pemilih <b>${voterLabel}</b> (Kelas: ${voter.className})?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#64748b",
+      confirmButtonText: "Ya, Hapus!",
+      cancelButtonText: "Batal",
+      reverseButtons: true,
+    });
+
+    if (result.isConfirmed) {
+      startTransition(async () => {
+        try {
+          Swal.fire({
+            title: "Menghapus Data...",
+            allowOutsideClick: false,
+            didOpen: () => {
+              Swal.showLoading();
+            },
+          });
+
+          const res = await deleteVoter(voter.id);
+          if (res.success) {
+            await Swal.fire({
+              icon: "success",
+              title: "Berhasil Dihapus!",
+              text: `Data pemilih ${voterLabel} telah dihapus dari sistem.`,
+              timer: 1500,
+              showConfirmButton: false,
+            });
+            router.refresh();
+            window.location.reload();
+          } else {
+            Swal.fire({
+              icon: "error",
+              title: "Gagal Menghapus",
+              text: res.error || "Gagal menghapus pemilih.",
+              confirmButtonColor: "#dc2626",
+            });
+          }
+        } catch (err: any) {
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Terjadi kesalahan sistem: " + err.message,
+            confirmButtonColor: "#dc2626",
+          });
+        }
+      });
+    }
+  };
+
   // Eksekusi import & auto-generate token
   const executeImport = async (dataToImport: Array<{ code: string; name: string; className: string }>) => {
     if (dataToImport.length === 0) {
@@ -459,14 +516,10 @@ export default function AdminUploadVoters({ initialVoters }: AdminUploadVotersPr
                       </td>
                       <td className="py-2.5 text-right">
                         <button
-                          onClick={async () => {
-                            if (confirm("Hapus pemilih " + (v.name || v.token) + "?")) {
-                              await deleteVoter(v.id);
-                              router.refresh();
-                              window.location.reload();
-                            }
-                          }}
-                          className="text-red-400 hover:text-red-600 p-1 hover:bg-red-50 rounded-lg transition-all"
+                          onClick={() => handleDeleteVoter(v)}
+                          disabled={isPending}
+                          className="text-red-400 hover:text-red-600 p-1 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50"
+                          title="Hapus Pemilih"
                         >
                           🗑️
                         </button>

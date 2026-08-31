@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { deleteVoter } from "@/lib/actions";
+import Swal from "sweetalert2";
 
 interface Voter {
   id: string;
@@ -54,22 +55,60 @@ export default function AdminVoters({ initialVoters, settings }: AdminVotersProp
   const headmasterName = settings?.headmasterName || "Kepala Sekolah";
   const headmasterNip = settings?.headmasterNip || "-";
 
-  const handleDeleteVoter = async (id: string) => {
-    if (!confirm("Apakah Anda yakin ingin menghapus data pemilih ini?")) return;
-
-    startTransition(async () => {
-      try {
-        const res = await deleteVoter(id);
-        if (res.success) {
-          router.refresh();
-          window.location.reload();
-        } else {
-          alert(res.error || "Gagal menghapus pemilih.");
-        }
-      } catch {
-        alert("Terjadi kesalahan sistem.");
-      }
+  const handleDeleteVoter = async (voter: Voter) => {
+    const voterLabel = voter.name ? `"${voter.name}"` : `Token ${voter.token}`;
+    const result = await Swal.fire({
+      title: "Hapus Data Pemilih?",
+      html: `Apakah Anda yakin ingin menghapus data pemilih <b>${voterLabel}</b> (Kelas: ${voter.className})?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#64748b",
+      confirmButtonText: "Ya, Hapus!",
+      cancelButtonText: "Batal",
+      reverseButtons: true,
     });
+
+    if (result.isConfirmed) {
+      startTransition(async () => {
+        try {
+          Swal.fire({
+            title: "Menghapus Data...",
+            allowOutsideClick: false,
+            didOpen: () => {
+              Swal.showLoading();
+            },
+          });
+
+          const res = await deleteVoter(voter.id);
+          if (res.success) {
+            await Swal.fire({
+              icon: "success",
+              title: "Berhasil Dihapus!",
+              text: `Data pemilih ${voterLabel} telah dihapus.`,
+              timer: 1500,
+              showConfirmButton: false,
+            });
+            router.refresh();
+            window.location.reload();
+          } else {
+            Swal.fire({
+              icon: "error",
+              title: "Gagal Menghapus",
+              text: res.error || "Gagal menghapus pemilih.",
+              confirmButtonColor: "#dc2626",
+            });
+          }
+        } catch (err: any) {
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Terjadi kesalahan sistem: " + err.message,
+            confirmButtonColor: "#dc2626",
+          });
+        }
+      });
+    }
   };
 
   const handleOpenPrintTab = () => {
@@ -280,9 +319,9 @@ export default function AdminVoters({ initialVoters, settings }: AdminVotersProp
                     </td>
                     <td className="py-3 text-right">
                       <button
-                        onClick={() => handleDeleteVoter(voter.id)}
+                        onClick={() => handleDeleteVoter(voter)}
                         disabled={isPending}
-                        className="text-red-400 hover:text-red-600 p-1.5 hover:bg-red-50 rounded-lg transition-all"
+                        className="text-red-400 hover:text-red-600 p-1.5 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50"
                         title="Hapus Pemilih"
                       >
                         🗑️
