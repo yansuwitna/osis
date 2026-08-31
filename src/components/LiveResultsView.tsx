@@ -38,13 +38,10 @@ interface LiveResultsViewProps {
 export default function LiveResultsView({ initialStats }: LiveResultsViewProps) {
   const [stats, setStats] = useState<StatsData>(initialStats);
   const [activeTab, setActiveTab] = useState<"PILKOSIS" | "PKS" | "MPK">("PILKOSIS");
-  const [autoRefresh, setAutoRefresh] = useState(true);
-  const [countdown, setCountdown] = useState(5);
-  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState<Date>(new Date());
 
-  // Set default active tab based on what's enabled
+  // Set default active tab based on active election types
   useEffect(() => {
     if (stats.settings.activePilcosis) {
       setActiveTab("PILKOSIS");
@@ -55,38 +52,27 @@ export default function LiveResultsView({ initialStats }: LiveResultsViewProps) 
     }
   }, [stats.settings.activePilcosis, stats.settings.activePks, stats.settings.activeMpk]);
 
-  const fetchData = useCallback(async () => {
-    setIsRefreshing(true);
+  // Silent real-time sync with database in the background (no page reload)
+  const syncLiveData = useCallback(async () => {
     try {
       const res = await getElectionStats();
       if (res && (res as any).chartData) {
         setStats(res as any);
-        setLastUpdated(new Date());
+        setLastSyncTime(new Date());
       }
     } catch (err) {
-      console.error("Gagal memperbarui hasil live:", err);
-    } finally {
-      setIsRefreshing(false);
-      setCountdown(5);
+      console.error("Silent sync error:", err);
     }
   }, []);
 
-  // Polling timer
+  // Real-time interval: auto-sync every 2 seconds seamlessly
   useEffect(() => {
-    if (!autoRefresh) return;
-
     const interval = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          fetchData();
-          return 5;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+      syncLiveData();
+    }, 2000);
 
     return () => clearInterval(interval);
-  }, [autoRefresh, fetchData]);
+  }, [syncLiveData]);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -141,11 +127,11 @@ export default function LiveResultsView({ initialStats }: LiveResultsViewProps) 
 
   return (
     <div className="min-h-screen bg-sacazio-hero bg-grid-pattern text-slate-800 flex flex-col selection:bg-violet-500 selection:text-white">
-      {/* Decorative Blur Elements */}
+      {/* Decorative Background Glow */}
       <div className="fixed -top-24 left-1/4 w-[600px] h-72 bg-violet-400/20 rounded-full blur-3xl animate-blob pointer-events-none" />
       <div className="fixed bottom-0 right-1/4 w-[500px] h-72 bg-pink-400/20 rounded-full blur-3xl animate-blob pointer-events-none" style={{ animationDelay: "3s" }} />
 
-      {/* Top Navbar */}
+      {/* Top Header Navbar */}
       <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-xl border-b border-violet-100 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
           {/* Logo & School Branding */}
@@ -164,11 +150,11 @@ export default function LiveResultsView({ initialStats }: LiveResultsViewProps) 
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-purple-600 to-pink-600 text-sm sm:text-base leading-tight">
-                  LIVE HITUNG CEPAT (QUICK COUNT)
+                  LIVE QUICK COUNT
                 </span>
-                <span className="inline-flex items-center gap-1 bg-emerald-500/10 text-emerald-600 border border-emerald-300 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  REAL-TIME
+                <span className="inline-flex items-center gap-1 bg-emerald-500/10 text-emerald-600 border border-emerald-300 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                  <span>LIVE REAL-TIME</span>
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 font-semibold tracking-wide">
@@ -179,33 +165,6 @@ export default function LiveResultsView({ initialStats }: LiveResultsViewProps) 
 
           {/* Action Toolbar */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Auto-refresh indicator & toggle */}
-            <button
-              onClick={() => setAutoRefresh(!autoRefresh)}
-              className={`text-xs font-semibold px-3 py-1.5 rounded-xl border transition-all flex items-center gap-1.5 ${
-                autoRefresh
-                  ? "bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100"
-                  : "bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200"
-              }`}
-              title="Klik untuk menyalakan/mematikan refresh otomatis"
-            >
-              <span>{autoRefresh ? "🔄" : "⏸️"}</span>
-              <span className="hidden sm:inline">
-                {autoRefresh ? `Auto-Refresh (${countdown}s)` : "Jeda"}
-              </span>
-            </button>
-
-            {/* Manual Refresh Button */}
-            <button
-              onClick={fetchData}
-              disabled={isRefreshing}
-              className="bg-white hover:bg-violet-50 border border-violet-200 text-violet-700 font-bold p-2 sm:px-3 sm:py-1.5 rounded-xl text-xs shadow-2xs transition-all active:scale-95 disabled:opacity-50 flex items-center gap-1"
-              title="Perbarui Data Sekarang"
-            >
-              <span className={isRefreshing ? "animate-spin" : ""}>⚡</span>
-              <span className="hidden sm:inline">{isRefreshing ? "Memuat..." : "Refresh"}</span>
-            </button>
-
             {/* Fullscreen Button */}
             <button
               onClick={toggleFullscreen}
@@ -216,7 +175,7 @@ export default function LiveResultsView({ initialStats }: LiveResultsViewProps) 
               <span className="hidden md:inline ml-1">{isFullscreen ? "Keluar Layar Penuh" : "Layar Penuh"}</span>
             </button>
 
-            {/* Home / Bilik Suara Link */}
+            {/* Bilik Suara Link */}
             <Link
               href="/"
               className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-bold px-3.5 py-1.5 rounded-xl text-xs shadow-md shadow-violet-200 transition-all flex items-center gap-1.5 active:scale-95"
@@ -239,14 +198,14 @@ export default function LiveResultsView({ initialStats }: LiveResultsViewProps) 
                   Hasil Perolehan Suara
                 </span>
                 <span className="text-xs text-slate-400 font-medium">
-                  Tanggal: <b>{eventDate}</b>
+                  Pelaksanaan: <b>{eventDate}</b>
                 </span>
               </div>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight mt-2">
                 {electionTitle}
               </h2>
               <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                Data terupdate seketika saat pemilih menekan tombol coblos di bilik suara digital.
+                Data terhubung secara real-time. Angka dan grafik persentase otomatis bergerak saat suara dicoblos.
               </p>
             </div>
 
@@ -335,14 +294,14 @@ export default function LiveResultsView({ initialStats }: LiveResultsViewProps) 
           </div>
         </div>
 
-        {/* Paslon Cards Grid with Photo & Percentages */}
+        {/* Paslon Cards Grid with Photo & Live Animated Percentages */}
         <div>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
               <span>🏆</span> Perolehan Suara Pasangan Calon ({tabCandidates.length} Paslon)
             </h3>
             <span className="text-xs text-slate-400 font-medium">
-              Update Terakhir: <b>{lastUpdated.toLocaleTimeString("id-ID")}</b>
+              Sinkronisasi: <b>{lastSyncTime.toLocaleTimeString("id-ID")}</b>
             </span>
           </div>
 
@@ -372,7 +331,7 @@ export default function LiveResultsView({ initialStats }: LiveResultsViewProps) 
                 return (
                   <div
                     key={candidate.id}
-                    className={`bg-white rounded-3xl overflow-hidden border-2 transition-all duration-300 flex flex-col shadow-md hover:shadow-xl relative ${
+                    className={`bg-white rounded-3xl overflow-hidden border-2 transition-all duration-500 flex flex-col shadow-md hover:shadow-xl relative ${
                       isLeading
                         ? "border-amber-400 ring-4 ring-amber-100"
                         : "border-violet-100 hover:border-violet-300"
@@ -430,7 +389,7 @@ export default function LiveResultsView({ initialStats }: LiveResultsViewProps) 
                         {/* Big Percentage & Vote Numbers */}
                         <div className="flex items-baseline justify-between mb-2">
                           <div>
-                            <span className="text-3xl sm:text-4xl font-black text-slate-800 tracking-tight">
+                            <span className="text-3xl sm:text-4xl font-black text-slate-800 tracking-tight transition-all duration-300">
                               {percent}%
                             </span>
                             <span className="text-xs font-semibold text-slate-400 ml-1.5">
@@ -439,7 +398,7 @@ export default function LiveResultsView({ initialStats }: LiveResultsViewProps) 
                           </div>
 
                           <div className="text-right">
-                            <div className="text-lg font-black text-violet-700">
+                            <div className="text-lg font-black text-violet-700 transition-all duration-300">
                               {candidate.votes}
                             </div>
                             <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 block">
@@ -448,10 +407,10 @@ export default function LiveResultsView({ initialStats }: LiveResultsViewProps) 
                           </div>
                         </div>
 
-                        {/* Animated Visual Progress Bar */}
+                        {/* Animated Visual Progress Bar with CSS Transitions */}
                         <div className="w-full h-4 bg-slate-200 rounded-full overflow-hidden p-0.5 shadow-inner">
                           <div
-                            className={`h-full rounded-full transition-all duration-1000 ease-out ${
+                            className={`h-full rounded-full transition-all duration-700 ease-out ${
                               progressGradients[idx % progressGradients.length]
                             }`}
                             style={{ width: `${Math.max(Number(percent), 2)}%` }}
@@ -498,10 +457,10 @@ export default function LiveResultsView({ initialStats }: LiveResultsViewProps) 
                       <tr key={c.id} className="hover:bg-violet-50/40 transition-colors">
                         <td className="py-3 pr-4 text-center font-bold text-slate-700">#{c.noUrut}</td>
                         <td className="py-3 pr-4 font-bold text-slate-800">{c.fullName}</td>
-                        <td className="py-3 pr-4 text-center font-black font-mono text-violet-700 text-sm">
+                        <td className="py-3 pr-4 text-center font-black font-mono text-violet-700 text-sm transition-all duration-300">
                           {c.votes}
                         </td>
-                        <td className="py-3 pr-4 text-right font-black font-mono text-pink-600 text-sm">
+                        <td className="py-3 pr-4 text-right font-black font-mono text-pink-600 text-sm transition-all duration-300">
                           {pct}%
                         </td>
                       </tr>
