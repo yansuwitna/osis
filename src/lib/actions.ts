@@ -1256,6 +1256,10 @@ export async function uploadLogoAction(type: "osis" | "sekolah" | "ttd", base64D
 
     const fileName = type === "osis" ? "logo.png" : type === "sekolah" ? "sekolah.png" : "ttd.png";
     const publicDir = path.join(process.cwd(), "public");
+    
+    // Pastikan folder public sudah dibuat
+    await fs.mkdir(publicDir, { recursive: true });
+
     const filePath = path.join(publicDir, fileName);
 
     await fs.writeFile(filePath, buffer);
@@ -1267,6 +1271,13 @@ export async function uploadLogoAction(type: "osis" | "sekolah" | "ttd", base64D
 
     return { success: true, fileName };
   } catch (error: any) {
+    console.error("Upload error on VPS:", error);
+    if (error.code === "EACCES" || error.message.includes("permission denied")) {
+      return {
+        success: false,
+        error: "Izin akses folder public di VPS ditolak (Permission Denied). Jalankan perintah: sudo chmod -R 775 public di terminal VPS Anda.",
+      };
+    }
     return { success: false, error: "Gagal menyimpan file: " + error.message };
   }
 }
