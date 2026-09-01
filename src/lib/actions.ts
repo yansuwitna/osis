@@ -483,6 +483,12 @@ export async function addCandidate(formData: FormData) {
     revalidatePath("/admin/candidates");
     return { success: true };
   } catch (error: any) {
+    if (error.code === "EACCES" || error.message?.includes("permission denied")) {
+      return {
+        success: false,
+        error: "Izin akses folder public/uploads di VPS ditolak (Permission Denied). Jalankan perintah: sudo chmod -R 775 public/uploads di terminal VPS Anda.",
+      };
+    }
     return { success: false, error: "Gagal menyimpan kandidat: " + error.message };
   }
 }
@@ -567,6 +573,12 @@ export async function updateCandidate(formData: FormData) {
     revalidatePath("/admin");
     return { success: true };
   } catch (error: any) {
+    if (error.code === "EACCES" || error.message?.includes("permission denied")) {
+      return {
+        success: false,
+        error: "Izin akses folder public/uploads di VPS ditolak (Permission Denied). Jalankan perintah: sudo chmod -R 775 public/uploads di terminal VPS Anda.",
+      };
+    }
     return { success: false, error: "Gagal memperbarui kandidat: " + error.message };
   }
 }

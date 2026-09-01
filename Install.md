@@ -233,6 +233,14 @@ server {
         proxy_send_timeout 86400s;
     }
 
+    # Akses Langsung File Upload (Foto Kandidat & Aset Statis)
+    location /uploads/ {
+        alias /var/www/osis/public/uploads/;
+        expires 30d;
+        add_header Cache-Control "public, no-transform";
+        try_files $uri $uri/ =404;
+    }
+
     # Konfigurasi Aplikasi Utama
     location / {
         proxy_pass http://localhost:3000;
