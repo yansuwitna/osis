@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useEffect, useTransition } from "react";
 import { getElectionStats } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -37,6 +37,46 @@ export default function AdminDashboard({ initialStats }: AdminDashboardProps) {
   const [stats, setStats] = useState<Stats>(initialStats);
   const [activeTab, setActiveTab] = useState<"PILKOSIS" | "PKS" | "MPK">("PILKOSIS");
   const [isPending, startTransition] = useTransition();
+
+  // Real-time SSE Stream + Sync Polling
+  useEffect(() => {
+    let eventSource: EventSource | null = null;
+    let syncInterval: NodeJS.Timeout | null = null;
+    let isSubscribed = true;
+
+    const fetchSync = async () => {
+      try {
+        const res = await fetch(`/api/stats?t=${Date.now()}`, { cache: "no-store" });
+        if (res.ok) {
+          const freshData = await res.json();
+          if (isSubscribed && freshData && freshData.chartData) {
+            setStats(freshData);
+          }
+        }
+      } catch {}
+    };
+
+    try {
+      eventSource = new EventSource("/api/live-stream");
+      eventSource.onmessage = (event) => {
+        try {
+          if (!event.data || event.data.startsWith(":")) return;
+          const freshData = JSON.parse(event.data);
+          if (isSubscribed && freshData && freshData.chartData) {
+            setStats(freshData);
+          }
+        } catch {}
+      };
+    } catch {}
+
+    syncInterval = setInterval(fetchSync, 5000);
+
+    return () => {
+      isSubscribed = false;
+      if (eventSource) eventSource.close();
+      if (syncInterval) clearInterval(syncInterval);
+    };
+  }, []);
 
   const refreshStats = () => {
     startTransition(async () => {

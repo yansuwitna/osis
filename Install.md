@@ -411,10 +411,24 @@ Berikut solusi untuk masalah umum yang sering dijumpai saat deployment di VPS Li
 
 ---
 
-### 3. ❌ Layar Live Quick Count (`/results` / `/hasil`) Tidak Mengalirkan Suara Seketika di VPS
-- **Gejala:** Suara yang dicoblos tidak langsung muncul di layar Quick Count secara instan.
-- **Penyebab:** Nginx menahan data stream (*proxy buffering* aktif).
-- **Solusi:** Pastikan blok `location /api/live-stream` di konfigurasi Nginx memiliki `proxy_buffering off;` (lihat contoh lengkap pada [Langkah 9](#langkah-9-konfigurasi-nginx-reverse-proxy-termasuk-sse-live-streaming--upload-50m)).
+### 3. ❌ Layar Live Quick Count (`/results` / `/hasil`) Tidak Mengalirkan Suara Seketika di VPS (Cloudflare / PM2 / Nginx)
+- **Gejala:** Suara yang dicoblos tidak langsung bertambah di layar Quick Count secara real-time.
+- **Penyebab & Solusi:**
+  1. **Cloudflare Proxy Buffering:**
+     - Masuk ke dashboard **Cloudflare** -> Domain Anda -> **Rules** -> **Page Rules** (atau **Cache Rules**).
+     - Buat Rule untuk URL: `*domainanda.com/api/live-stream*`
+     - Set: **Cache Level: Bypass**, **Rocket Loader: Off**, **Auto Minify: Off**, **Disable Performance**.
+  2. **PM2 Mode (Cluster vs Fork):**
+     - Jika menjalankan PM2 dengan mode cluster (`-i max`), jalankan dengan mode standar (fork) agar in-memory event bus terhubung:
+       ```bash
+       pm2 delete evoting-osis
+       pm2 start npm --name "evoting-osis" -- start
+       pm2 save
+       ```
+     - *(Aplikasi kini juga dilengkapi hybrid background sync cadangan setiap 5 detik)*.
+  3. **Proxy Buffering Nginx:**
+     - Pastikan blok `location /api/live-stream` di `/etc/nginx/sites-available/evoting` memiliki `proxy_buffering off;` dan `proxy_cache off;`.
+     - Reload Nginx: `sudo nginx -t && sudo systemctl reload nginx`.
 
 ---
 

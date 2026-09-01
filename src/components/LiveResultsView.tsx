@@ -52,42 +52,72 @@ export default function LiveResultsView({ initialStats }: LiveResultsViewProps) 
     }
   }, [stats.settings.activePilcosis, stats.settings.activePks, stats.settings.activeMpk]);
 
-  // Server-Sent Events (SSE): Koneksi Stream Push Instan Tanpa Polling
+  // Server-Sent Events (SSE) Real-Time Stream + Fallback Polling Cadangan
   useEffect(() => {
     let eventSource: EventSource | null = null;
+    let fallbackInterval: NodeJS.Timeout | null = null;
+    let isSubscribed = true;
 
-    try {
-      eventSource = new EventSource("/api/live-stream");
-
-      eventSource.onopen = () => {
-        setIsStreamConnected(true);
-      };
-
-      eventSource.onmessage = (event) => {
-        try {
-          const freshData = JSON.parse(event.data);
-          if (freshData && freshData.chartData) {
+    const fetchFallbackStats = async () => {
+      try {
+        const res = await fetch(`/api/stats?t=${Date.now()}`, { cache: "no-store" });
+        if (res.ok) {
+          const freshData = await res.json();
+          if (isSubscribed && freshData && freshData.chartData) {
             setStats(freshData);
             setLastPushTime(new Date());
-            setIsStreamConnected(true);
           }
-        } catch (err) {
-          console.error("Error membaca data stream SSE:", err);
         }
-      };
+      } catch (err) {
+        // silent fail on network blip
+      }
+    };
 
-      eventSource.onerror = () => {
-        setIsStreamConnected(false);
-        // Browser native EventSource akan otomatis me-reconnect secara mandiri
-      };
-    } catch (err) {
-      console.error("Gagal inisialisasi SSE EventSource:", err);
-      setIsStreamConnected(false);
-    }
+    const setupSSE = () => {
+      try {
+        eventSource = new EventSource("/api/live-stream");
+
+        eventSource.onopen = () => {
+          if (isSubscribed) setIsStreamConnected(true);
+        };
+
+        eventSource.onmessage = (event) => {
+          try {
+            if (!event.data || event.data.startsWith(":")) return;
+            const freshData = JSON.parse(event.data);
+            if (isSubscribed && freshData && freshData.chartData) {
+              setStats(freshData);
+              setLastPushTime(new Date());
+              setIsStreamConnected(true);
+            }
+          } catch (err) {
+            console.error("Error parsing data stream SSE:", err);
+          }
+        };
+
+        eventSource.onerror = () => {
+          if (isSubscribed) {
+            setIsStreamConnected(false);
+          }
+        };
+      } catch (err) {
+        console.error("Gagal inisialisasi SSE:", err);
+        if (isSubscribed) setIsStreamConnected(false);
+      }
+    };
+
+    setupSSE();
+
+    // Fallback sync tiap 5 detik untuk mengantisipasi buffering proxy/Cloudflare atau cluster PM2
+    fallbackInterval = setInterval(fetchFallbackStats, 5000);
 
     return () => {
+      isSubscribed = false;
       if (eventSource) {
         eventSource.close();
+      }
+      if (fallbackInterval) {
+        clearInterval(fallbackInterval);
       }
     };
   }, []);
