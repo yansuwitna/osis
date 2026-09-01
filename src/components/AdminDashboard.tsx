@@ -38,11 +38,18 @@ export default function AdminDashboard({ initialStats }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<"PILKOSIS" | "PKS" | "MPK">("PILKOSIS");
   const [isPending, startTransition] = useTransition();
 
-  // Real-time SSE Stream + Sync Polling
+  // Real-time SSE Stream (Polling cadangan HANYA aktif jika SSE terputus)
   useEffect(() => {
     let eventSource: EventSource | null = null;
     let syncInterval: NodeJS.Timeout | null = null;
     let isSubscribed = true;
+
+    const stopSync = () => {
+      if (syncInterval) {
+        clearInterval(syncInterval);
+        syncInterval = null;
+      }
+    };
 
     const fetchSync = async () => {
       try {
@@ -56,25 +63,45 @@ export default function AdminDashboard({ initialStats }: AdminDashboardProps) {
       } catch {}
     };
 
+    const startSync = () => {
+      if (syncInterval) return;
+      fetchSync();
+      syncInterval = setInterval(fetchSync, 5000);
+    };
+
     try {
       eventSource = new EventSource("/api/live-stream");
+
+      eventSource.onopen = () => {
+        stopSync();
+      };
+
       eventSource.onmessage = (event) => {
         try {
           if (!event.data || event.data.startsWith(":")) return;
           const freshData = JSON.parse(event.data);
           if (isSubscribed && freshData && freshData.chartData) {
             setStats(freshData);
+            stopSync();
           }
         } catch {}
       };
-    } catch {}
 
-    syncInterval = setInterval(fetchSync, 5000);
+      eventSource.onerror = () => {
+        if (isSubscribed) {
+          startSync();
+        }
+      };
+    } catch {
+      if (isSubscribed) {
+        startSync();
+      }
+    }
 
     return () => {
       isSubscribed = false;
       if (eventSource) eventSource.close();
-      if (syncInterval) clearInterval(syncInterval);
+      stopSync();
     };
   }, []);
 
